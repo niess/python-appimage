@@ -10,8 +10,7 @@ from .url import urlretrieve
 
 
 __all__ = ['APPIMAGETOOL', 'EXCLUDELIST', 'PATCHELF', 'PREFIX',
-           'ensure_appimagetool', 'ensure_excludelist', 'ensure_patchelf',
-           'fetch_all']
+           'ensure_appimagetool', 'ensure_excludelist', 'ensure_patchelf']
 
 
 _ARCH = platform.machine()
@@ -20,13 +19,13 @@ _ARCH = platform.machine()
 PREFIX = os.path.abspath(os.path.dirname(__file__) + '/..')
 '''Package installation prefix'''
 
-APPIMAGETOOL = PREFIX + '/bin/appimagetool.' + _ARCH
+APPIMAGETOOL = os.path.expanduser('~/.local/bin/appimagetool')
 '''Location of the appimagetool binary'''
 
 EXCLUDELIST = PREFIX + '/data/excludelist'
 '''AppImage exclusion list'''
 
-PATCHELF = PREFIX + '/bin/patchelf.' + _ARCH
+PATCHELF = os.path.expanduser('~/.local/bin/patchelf')
 '''Location of the PatchELF binary'''
 
 
@@ -41,7 +40,7 @@ def ensure_appimagetool():
               'download/continuous'
     log('INSTALL', 'appimagetool from %s', baseurl)
 
-    appdir_name = 'appimagetool-{:}.appdir'.format(_ARCH)
+    appdir_name = '.appimagetool.appdir'.format(_ARCH)
     appdir = os.path.join(os.path.dirname(APPIMAGETOOL), appdir_name)
     if not os.path.exists(appdir):
         make_tree(os.path.dirname(appdir))
@@ -81,7 +80,7 @@ def ensure_patchelf():
     log('INSTALL', 'patchelf from %s', baseurl)
 
     dirname = os.path.dirname(PATCHELF)
-    patchelf = dirname + '/patchelf.' + _ARCH
+    patchelf = dirname + '/patchelf'
     make_tree(dirname)
     with TemporaryDirectory() as tmpdir:
         urlretrieve(os.path.join(baseurl, 'rolling', appimage), appimage)
@@ -89,11 +88,3 @@ def ensure_patchelf():
         system('./' + appimage, '--appimage-extract')
         copy_file('squashfs-root/usr/bin/patchelf', patchelf)
     os.chmod(patchelf, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-
-
-def fetch_all():
-    '''Fetch all dependencies from the web
-    '''
-    ensure_appimagetool()
-    ensure_excludelist()
-    ensure_patchelf()

@@ -4,8 +4,6 @@ import logging
 import os
 import sys
 
-from .utils.deps import fetch_all
-
 
 __all__ = ['main']
 
@@ -22,9 +20,6 @@ def main():
         dest='verbosity', action='store_const', const=logging.ERROR)
     parser.add_argument('-v', '--verbose', help='print extra information',
         dest='verbosity', action='store_const', const=logging.DEBUG)
-
-    parser.add_argument('--deploy', help=argparse.SUPPRESS,
-                        action='store_true', default=False)
 
     local_parser = subparsers.add_parser('local')
     local_parser.add_argument('-d', '--destination',
@@ -43,11 +38,6 @@ def main():
     # Configure the verbosity
     if args.verbosity:
         logging.getLogger().setLevel(args.verbosity)
-
-    if args.deploy:
-        # Fetch dependencies and exit
-        fetch_all()
-        sys.exit(0)
 
     # Call the AppImage builder
     builder = import_module('.builders.' + args.builder, package=__package__)
