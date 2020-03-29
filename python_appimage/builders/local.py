@@ -2,9 +2,8 @@ import glob
 import os
 import shutil
 
-from .build import build_appimage
-from .relocate import relocate_python
-from .tmp import TemporaryDirectory
+from ..actions import build_appimage, relocate_python
+from ..utils.tmp import TemporaryDirectory
 
 
 __all__ = ['build']

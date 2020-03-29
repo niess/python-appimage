@@ -4,11 +4,11 @@ import re
 import shutil
 import sys
 
-from .deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,           \
-                  ensure_patchelf
-from .fs import make_tree, copy_file, copy_tree, remove_file, remove_tree
-from .log import debug, log
-from .system import ldd, system
+from ..utils.deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,    \
+                         ensure_patchelf
+from ..utils.fs import make_tree, copy_file, copy_tree, remove_file, remove_tree
+from ..utils.log import debug, log
+from ..utils.system import ldd, system
 
 
 __all__ = ["patch_binary", "relocate_python"]

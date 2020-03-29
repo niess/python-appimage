@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-from .deps import fetch_all
+from .utils.deps import fetch_all
 
 
 __all__ = ['main']
@@ -50,7 +50,7 @@ def main():
         sys.exit(0)
 
     # Call the AppImage builder
-    builder = import_module('.' + args.builder, package=__package__)
+    builder = import_module('.builders.' + args.builder, package=__package__)
     builder.build(*builder._unpack_args(args))
 
 

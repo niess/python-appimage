@@ -17,7 +17,7 @@ __all__ = ['APPIMAGETOOL', 'EXCLUDELIST', 'PATCHELF', 'PREFIX',
 _ARCH = platform.machine()
 
 
-PREFIX = os.path.abspath(os.path.dirname(__file__))
+PREFIX = os.path.abspath(os.path.dirname(__file__) + '/..')
 '''Package installation prefix'''
 
 APPIMAGETOOL = PREFIX + '/bin/appimagetool.' + _ARCH

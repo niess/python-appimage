@@ -2,11 +2,11 @@ import os
 import subprocess
 import sys
 
-from .deps import APPIMAGETOOL, ensure_appimagetool
-from .docker import docker_run
-from .fs import copy_tree
-from .log import debug, log
-from .tmp import TemporaryDirectory
+from ..utils.deps import APPIMAGETOOL, ensure_appimagetool
+from ..utils.docker import docker_run
+from ..utils.fs import copy_tree
+from ..utils.log import debug, log
+from ..utils.tmp import TemporaryDirectory
 
 
 __all__ = ['build_appimage']
