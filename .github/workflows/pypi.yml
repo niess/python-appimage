@@ -1,0 +1,49 @@
+name: PyPI
+on:
+  push:
+    paths:
+    - .github/workflows/pypi.yml
+    - LICENSE
+    - python_appimage
+    - README.md
+    - setup.py
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['2.7', '3.5']
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.version }}
+
+    - name: Test local builder
+      run: |
+        python -m python_appimage local -p $(which python) -d test.AppImage
+        test -e test.AppImage
+
+  Publish:
+    needs: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.8'
+
+    - name: Build wheel
+      run: |
+        pip install -U pip
+        pip install -U wheel
+        python setup.py bdist_wheel --universal
+
+    - name: Upload to PyPI
+      if: github.ref == 'refs/heads/master'
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.PYPI_TOKEN }}
