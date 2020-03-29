@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=python{{fullversion}}
+Exec=python{{version}}
+Comment=A Python {{version}} runtime
+Icon=python
+Categories=Development;
+Terminal=true

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>python{{fullversion}}</id>
+    <metadata_license>Python-2.0</metadata_license>
+    <project_license>Python-2.0</project_license>
+    <name>Python {{version}}</name>
+    <summary>A Python {{version}} runtime</summary>
+    <description>
+        <p>  A relocated Python {{version}} installation running from an
+             AppImage.
+        </p>
+    </description>
+    <launchable type="desktop-id">python.desktop</launchable>
+    <url type="homepage">https://python.org</url>
+    <provides>
+        <binary>python{{version}}</binary>
+    </provides>
+</component>

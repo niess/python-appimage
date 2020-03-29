@@ -1,0 +1,7 @@
+*.AppImage
+*.pyc
+*.pyo
+__pycache__
+AppDir
+python_appimage/bin
+python_appimage/data/excludelist
