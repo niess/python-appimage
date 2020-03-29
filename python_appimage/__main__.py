@@ -9,6 +9,13 @@ __all__ = ['main']
 
 
 def main():
+    '''Entry point for the CLI
+    '''
+
+    # Binary dependencies
+    binaries = ('appimagetool', 'patchelf')
+
+
     # Parse arguments
     parser = argparse.ArgumentParser(
         prog='python-appimage',
@@ -25,7 +32,7 @@ def main():
     install_parser = subparsers.add_parser('install',
         description='Install binary dependencies')
     install_parser.add_argument('binary', nargs='+',
-        choices=('appimagetool', 'patchelf'), help='one or more binary name')
+        choices=binaries, help='one or more binary name')
 
     local_parser = subparsers.add_parser('local',
         description='Bundle a local Python installation')
@@ -42,6 +49,11 @@ def main():
 
     manylinux_parser.add_argument('--contained', help=argparse.SUPPRESS,
                                   action='store_true', default=False)
+
+    which_parser = subparsers.add_parser('which',
+        description='Locate a binary dependency')
+    which_parser.add_argument('binary', choices=binaries,
+        help='name of the binary to locate')
 
     args = parser.parse_args()
 
