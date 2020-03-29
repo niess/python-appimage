@@ -4,13 +4,13 @@ import platform
 import shutil
 import sys
 
-from ..actions import build_appimage, relocate_python
+from ..appimage import build_appimage, relocate_python
 from ..utils.docker import docker_run
 from ..utils.fs import copy_tree
 from ..utils.tmp import TemporaryDirectory
 
 
-__all__ = ['build']
+__all__ = ['execute']
 
 
 def _unpack_args(args):
@@ -31,7 +31,7 @@ def _get_appimage_name(abi, tag):
         fullversion, abi, tag)
 
 
-def build(tag, abi, contained=False):
+def execute(tag, abi, contained=False):
     '''Build a Python AppImage using a manylinux docker image
     '''
 

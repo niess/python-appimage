@@ -2,11 +2,11 @@ import glob
 import os
 import shutil
 
-from ..actions import build_appimage, relocate_python
+from ..appimage import build_appimage, relocate_python
 from ..utils.tmp import TemporaryDirectory
 
 
-__all__ = ['build']
+__all__ = ['execute']
 
 
 def _unpack_args(args):
@@ -15,7 +15,7 @@ def _unpack_args(args):
     return args.python, args.destination
 
 
-def build(python=None, destination=None):
+def execute(python=None, destination=None):
     '''Build a Python AppImage using a local installation
     '''
     pwd = os.getcwd()

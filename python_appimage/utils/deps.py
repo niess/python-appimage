@@ -33,7 +33,7 @@ def ensure_appimagetool():
     '''Fetch appimagetool from the web if not available locally
     '''
     if os.path.exists(APPIMAGETOOL):
-        return
+        return False
 
     appimage = 'appimagetool-{0:}.AppImage'.format(_ARCH)
     baseurl = 'https://github.com/AppImage/AppImageKit/releases/'              \
@@ -52,6 +52,8 @@ def ensure_appimagetool():
 
     if not os.path.exists(APPIMAGETOOL):
         os.symlink(appdir_name + '/AppRun', APPIMAGETOOL)
+
+    return True
 
 
 # Installers for dependencies
@@ -72,7 +74,7 @@ def ensure_patchelf():
     '''Fetch PatchELF from the web if not available locally
     '''
     if os.path.exists(PATCHELF):
-        return
+        return False
 
     iarch = 'i386' if _ARCH == 'i686' else _ARCH
     appimage = 'patchelf-{0:}.AppImage'.format(iarch)
@@ -88,3 +90,5 @@ def ensure_patchelf():
         system('./' + appimage, '--appimage-extract')
         copy_file('squashfs-root/usr/bin/patchelf', patchelf)
     os.chmod(patchelf, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+
+    return True
