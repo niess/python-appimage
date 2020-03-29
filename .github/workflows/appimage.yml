@@ -3,7 +3,7 @@ on:
   push:
     paths:
     - '.github/workflows/appimage.yml'
-    - 'python_appimage'
+    - 'python_appimage/**'
 
 jobs:
   Build:

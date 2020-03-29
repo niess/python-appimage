@@ -2,11 +2,11 @@ name: PyPI
 on:
   push:
     paths:
-    - .github/workflows/pypi.yml
-    - LICENSE
-    - python_appimage
-    - README.md
-    - setup.py
+    - '.github/workflows/pypi.yml'
+    - 'LICENSE'
+    - 'python_appimage/**'
+    - 'README.md'
+    - 'setup.py'
 
 jobs:
   Test:
