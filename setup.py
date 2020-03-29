@@ -8,7 +8,7 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
-from python_appimage.utils.deps import fetch_all
+from python_appimage.utils.deps import ensure_excludelist
 
 
 CLASSIFIERS = '''\
@@ -68,6 +68,8 @@ git_revision = '{git_revision:}'
 def get_package_data():
     '''Get the list of package data
     '''
+    ensure_excludelist()
+
     prefix = os.path.dirname(__file__) or '.'
     return ['data/' + file_
             for file_ in os.listdir(prefix + '/python_appimage/data')]
@@ -93,5 +95,9 @@ setuptools.setup(
     platforms = ['Linux'],
     python_requires = '>=2.7',
     include_package_data = True,
-    package_data = {'': get_package_data()}
+    package_data = {'': get_package_data()},
+    entry_points = {
+        'console_scripts' : (
+            'python-appimage = python_appimage.__main__:main',)
+    }
 )
