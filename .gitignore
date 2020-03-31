@@ -3,9 +3,10 @@
 *.pyo
 __pycache__
 AppDir
-build
+build/*
 dist
 python_appimage.egg-info
 python_appimage/bin
 python_appimage/data/excludelist
 python_appimage/version.py
+!python_appimage/commands/build

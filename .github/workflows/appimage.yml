@@ -26,7 +26,7 @@ jobs:
     - name: Build
       run: |
         # Build the AppImage
-        python -m python_appimage manylinux \
+        python -m python_appimage build manylinux \
           ${{ matrix.image }}_${{ matrix.arch }} \
           ${{ matrix.tag }}
 
@@ -43,6 +43,7 @@ jobs:
         echo "::set-env name=PYTHON_VERSION::${version}"
 
     - uses: actions/upload-artifact@v1
+      if: github.ref == 'refs/heads/master'
       with:
         name: python${{ env.PYTHON_VERSION }}-appimages
         path: ${{ env.PYTHON_APPIMAGE }}
@@ -50,6 +51,7 @@ jobs:
   Release:
     needs: Build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
         version: [2.7, 3.5, 3.6, 3.7, 3.8]

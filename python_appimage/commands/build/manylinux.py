@@ -4,10 +4,10 @@ import platform
 import shutil
 import sys
 
-from ..appimage import build_appimage, relocate_python
-from ..utils.docker import docker_run
-from ..utils.fs import copy_tree
-from ..utils.tmp import TemporaryDirectory
+from ...appimage import build_appimage, relocate_python
+from ...utils.docker import docker_run
+from ...utils.fs import copy_tree
+from ...utils.tmp import TemporaryDirectory
 
 
 __all__ = ['execute']
@@ -41,7 +41,7 @@ def execute(tag, abi, contained=False):
         python = '/opt/python/' + abi + '/bin/python'
 
         pwd = os.getcwd()
-        dirname = os.path.abspath(os.path.dirname(__file__) + '/..')
+        dirname = os.path.abspath(os.path.dirname(__file__) + '/../..')
         with TemporaryDirectory() as tmpdir:
             copy_tree(dirname, 'python_appimage')
 

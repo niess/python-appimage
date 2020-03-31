@@ -15,13 +15,12 @@ def main():
     # Binary dependencies
     binaries = ('appimagetool', 'patchelf')
 
-
     # Parse arguments
     parser = argparse.ArgumentParser(
         prog='python-appimage',
         description='Bundle a Python installation into an AppImage')
     subparsers = parser.add_subparsers(title='command',
-                                       help='Build or install command',
+                                       help='Command to execute',
                                        dest='command')
 
     parser.add_argument('-q', '--quiet', help='disable logging',
@@ -34,21 +33,28 @@ def main():
     install_parser.add_argument('binary', nargs='+',
         choices=binaries, help='one or more binary name')
 
-    local_parser = subparsers.add_parser('local',
-        description='Bundle a local Python installation')
-    local_parser.add_argument('-d', '--destination',
-                              help='AppImage destination')
-    local_parser.add_argument('-p', '--python', help='python executable')
+    build_parser = subparsers.add_parser('build',
+        description='Build a Python appimage')
+    build_subparsers = build_parser.add_subparsers(
+                           title='type',
+                           help='Type of AppImage build',
+                           dest='sub_command')
 
-    manylinux_parser = subparsers.add_parser('manylinux',
+    build_local_parser = build_subparsers.add_parser('local',
+        description='Bundle a local Python installation')
+    build_local_parser.add_argument('-d', '--destination',
+                              help='AppImage destination')
+    build_local_parser.add_argument('-p', '--python', help='python executable')
+
+    build_manylinux_parser = build_subparsers.add_parser('manylinux',
         description='Bundle a manylinux Python installation using docker')
-    manylinux_parser.add_argument('tag',
+    build_manylinux_parser.add_argument('tag',
         help='manylinux image tag (e.g. 2010_x86_64)')
-    manylinux_parser.add_argument('abi',
+    build_manylinux_parser.add_argument('abi',
         help='python ABI (e.g. cp37-cp37m)')
 
-    manylinux_parser.add_argument('--contained', help=argparse.SUPPRESS,
-                                  action='store_true', default=False)
+    build_manylinux_parser.add_argument('--contained', help=argparse.SUPPRESS,
+                                        action='store_true', default=False)
 
     which_parser = subparsers.add_parser('which',
         description='Locate a binary dependency')
@@ -62,8 +68,10 @@ def main():
         logging.getLogger().setLevel(args.verbosity)
 
     # Call the requested command
-    command = import_module('.commands.' +
-                            args.command, package=__package__)
+    module = '.commands.' + args.command
+    if args.sub_command:
+        module += '.' + args.sub_command
+    command = import_module(module, package=__package__)
     command.execute(*command._unpack_args(args))
 
 

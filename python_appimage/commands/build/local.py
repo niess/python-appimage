@@ -2,8 +2,8 @@ import glob
 import os
 import shutil
 
-from ..appimage import build_appimage, relocate_python
-from ..utils.tmp import TemporaryDirectory
+from ...appimage import build_appimage, relocate_python
+from ...utils.tmp import TemporaryDirectory
 
 
 __all__ = ['execute']
