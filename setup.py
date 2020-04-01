@@ -3,12 +3,9 @@ import os
 import setuptools
 import ssl
 import subprocess
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
 
 from python_appimage.utils.deps import ensure_excludelist
+from python_appimage.utils.url import urlopen
 
 
 CLASSIFIERS = '''\

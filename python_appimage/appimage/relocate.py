@@ -9,31 +9,15 @@ from ..utils.deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,    \
 from ..utils.fs import make_tree, copy_file, copy_tree, remove_file, remove_tree
 from ..utils.log import debug, log
 from ..utils.system import ldd, system
+from ..utils.template import copy_template
 
 
 __all__ = ["patch_binary", "relocate_python"]
 
 
-_template_pattern = re.compile('[{][{]([^{}]+)[}][}]')
-
-
 def _copy_template(name, destination, **kwargs):
-    '''Copy a template file and substitue keywords
-    '''
-    debug('COPY', '%s as %s', name, destination)
-    source = os.path.join(PREFIX, 'data', name)
-    with open(source) as f:
-        template = f.read()
-
-    def matcher(m):
-        return kwargs[m.group(1)]
-
-    txt = _template_pattern.sub(matcher, template)
-
-    with open(destination, 'w') as f:
-        f.write(txt)
-
-    shutil.copymode(source, destination)
+    path = os.path.join(PREFIX, 'data', name)
+    copy_template(path, destination, **kwargs)
 
 
 _excluded_libs = None
@@ -225,7 +209,8 @@ def relocate_python(python=None, appdir=None):
     apprun = APPDIR + '/AppRun'
     if not os.path.exists(apprun):
         log('INSTALL', 'AppRun')
-        _copy_template('apprun.sh', apprun, version=VERSION)
+        entrypoint = '"${{APPDIR}}/usr/bin/python{:}" "$@"'.format(VERSION)
+        _copy_template('apprun.sh', apprun, entrypoint=entrypoint)
 
 
     # Bundle the desktop file

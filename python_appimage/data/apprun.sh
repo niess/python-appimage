@@ -5,5 +5,5 @@ self="$(readlink -f -- $0)"
 here="${self%/*}"
 APPDIR="${APPDIR:-${here}}"
 
-# Call the python wrapper
-"${APPDIR}/usr/bin/python{{version}}" "$@"
+# Call the entry point
+{{ entrypoint }}

@@ -56,6 +56,13 @@ def main():
     build_manylinux_parser.add_argument('--contained', help=argparse.SUPPRESS,
                                         action='store_true', default=False)
 
+    build_app_parser = build_subparsers.add_parser('app',
+        description='Build a Python application using a base AppImage')
+    build_app_parser.add_argument('appdir',
+        help='path to the application metadata')
+    build_app_parser.add_argument('-n', '--name',
+        help='application name')
+
     which_parser = subparsers.add_parser('which',
         description='Locate a binary dependency')
     which_parser.add_argument('binary', choices=binaries,

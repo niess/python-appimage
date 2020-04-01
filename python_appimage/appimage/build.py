@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 
+from ..utils.compat import decode
 from ..utils.deps import APPIMAGETOOL, ensure_appimagetool
 from ..utils.docker import docker_run
 from ..utils.fs import copy_tree
@@ -31,11 +32,7 @@ def build_appimage(appdir=None, destination=None):
                                           stderr=subprocess.STDOUT)
     stdout = []
     while True:
-        out = p.stdout.readline()
-        try:
-            out = out.decode()
-        except AttributeError:
-            out = str(out)
+        out = decode(p.stdout.readline())
         stdout.append(out)
         if out == '' and p.poll() is not None:
             break

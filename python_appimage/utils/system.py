@@ -2,19 +2,12 @@ import os
 import re
 import subprocess
 
+from .compat import decode
 from .log import debug
 
 
 __all__ = ['ldd', 'system']
 
-
-def _decode(s):
-    '''Decode Python 3 bytes as str
-    '''
-    try:
-        return s.decode()
-    except AttributeError:
-        return s
 
 
 def system(*args):
@@ -27,13 +20,13 @@ def system(*args):
                          stderr=subprocess.PIPE)
     out, err = p.communicate()
     if err:
-        err = _decode(err)
+        err = decode(err)
         stripped = [line for line in err.split(os.linesep)
                     if line and not line.startswith('fuse: warning:')]
         if stripped:
             raise RuntimeError(err)
 
-    return str(_decode(out).strip())
+    return str(decode(out).strip())
 
 
 _ldd_pattern = re.compile('=> (.+) [(]0x')
