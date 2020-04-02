@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>scipy</id>
+    <metadata_license>Python-2.0</metadata_license>
+    <project_license>Python-2.0</project_license>
+    <name>Scipy</name>
+    <summary>A Python {{ python-fullversion }} runtime with {{ requirements }}
+    </summary>
+    <description>
+        <p>  A relocated Python {{ python-fullversion }} installation containing
+             the scipy packages suite ({{ requirements }}) and running from an
+             AppImage.
+        </p>
+    </description>
+    <launchable type="desktop-id">scipy.desktop</launchable>
+    <url type="homepage">https://scipy.org</url>
+    <provides>
+        <binary>python{{ python-version }}</binary>
+    </provides>
+</component>

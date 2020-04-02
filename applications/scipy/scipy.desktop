@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=scipy
+Exec=scipy
+Comment=A Python {{ python-fullversion }} runtime with {{ requirements }}
+Icon=scipy
+Categories=Science;
+Terminal=true
