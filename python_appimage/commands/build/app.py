@@ -36,8 +36,9 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
     '''
 
     # Download releases meta data
-    releases = json.load(
-        urlopen('https://api.github.com/repos/niess/python-appimage/releases'))
+    content = urlopen(
+        'https://api.github.com/repos/niess/python-appimage/releases').read()
+    releases = json.loads(content.decode())
 
 
     # Fetch the requested Python version or the latest if no specific version
