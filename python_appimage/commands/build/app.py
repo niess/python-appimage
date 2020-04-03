@@ -132,8 +132,8 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         log('EXTRACT', '%s', os.path.basename(base_image))
         urlretrieve(base_image, 'base.AppImage')
         os.chmod('base.AppImage', stat.S_IRWXU)
-        system('./base.AppImage --appimage-extract')
-        system('mv squashfs-root AppDir')
+        system(('./base.AppImage', '--appimage-extract'))
+        system(('mv', 'squashfs-root', 'AppDir'))
 
 
         # Bundle the desktop file
@@ -212,12 +212,14 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
 
         # Bundle the requirements
         if requirements_list:
-            system('./AppDir/AppRun -m pip install -U '
-                   '--no-warn-script-location pip')
+            deprecation = 'DEPRECATION: Python 2.7 reached the end of its life'
+            system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U',
+                   '--no-warn-script-location', 'pip'), exclude=deprecation)
             for requirement in requirements_list:
                 log('BUNDLE', requirement)
-                system('./AppDir/AppRun -m pip install -U '
-                       '--no-warn-script-location ' + requirement)
+                system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U',
+                       '--no-warn-script-location', requirement),
+                       exclude=deprecation)
 
 
         # Bundle the entry point

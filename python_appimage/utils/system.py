@@ -9,20 +9,35 @@ from .log import debug
 __all__ = ['ldd', 'system']
 
 
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
-def system(*args):
+
+def system(args, exclude=None):
     '''System call with capturing output
     '''
     cmd = ' '.join(args)
     debug('SYSTEM', cmd)
+
+    if exclude is None:
+        exclude = []
+    elif isinstance(exclude, basestring):
+        exclude = [exclude]
+    else:
+        exclude = list(exclude)
+    exclude.append('fuse: warning:')
 
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     out, err = p.communicate()
     if err:
         err = decode(err)
-        stripped = [line for line in err.split(os.linesep)
-                    if line and not line.startswith('fuse: warning:')]
+        stripped = [line for line in err.split(os.linesep) if line]
+        for pattern in exclude:
+            stripped = [line for line in stripped
+                        if not line.startswith(pattern)]
         if stripped:
             raise RuntimeError(err)
 
@@ -35,5 +50,5 @@ _ldd_pattern = re.compile('=> (.+) [(]0x')
 def ldd(path):
     '''Get dependencies list of dynamic libraries
     '''
-    out = system('ldd', path)
+    out = system(('ldd', path))
     return _ldd_pattern.findall(out)

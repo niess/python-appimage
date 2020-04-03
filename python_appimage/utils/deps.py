@@ -47,7 +47,7 @@ def ensure_appimagetool():
         with TemporaryDirectory() as tmpdir:
             urlretrieve(os.path.join(baseurl, appimage), appimage)
             os.chmod(appimage, stat.S_IRWXU)
-            system('./' + appimage, '--appimage-extract')
+            system(('./' + appimage, '--appimage-extract'))
             copy_tree('squashfs-root', appdir)
 
     if not os.path.exists(APPIMAGETOOL):
@@ -87,7 +87,7 @@ def ensure_patchelf():
     with TemporaryDirectory() as tmpdir:
         urlretrieve(os.path.join(baseurl, 'rolling', appimage), appimage)
         os.chmod(appimage, stat.S_IRWXU)
-        system('./' + appimage, '--appimage-extract')
+        system(('./' + appimage, '--appimage-extract'))
         copy_file('squashfs-root/usr/bin/patchelf', patchelf)
     os.chmod(patchelf, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 

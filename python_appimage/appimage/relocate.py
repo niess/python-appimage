@@ -44,12 +44,12 @@ def patch_binary(path, libdir, recursive=True):
         excluded = _excluded_libs
 
     ensure_patchelf()
-    rpath = '\'' + system(PATCHELF, '--print-rpath', path) + '\''
+    rpath = '\'' + system((PATCHELF, '--print-rpath', path)) + '\''
     relpath = os.path.relpath(libdir, os.path.dirname(path))
     relpath = '' if relpath == '.' else '/' + relpath
     expected = '\'$ORIGIN' + relpath + '\''
     if rpath != expected:
-        system(PATCHELF, '--set-rpath', expected, path)
+        system((PATCHELF, '--set-rpath', expected, path))
 
     deps = ldd(path)
     for dep in deps:
@@ -78,8 +78,8 @@ def relocate_python(python=None, appdir=None):
 
     # Set some key variables & paths
     if python:
-        FULLVERSION = system(python, '-c',
-            '"import sys; print(\'{:}.{:}.{:}\'.format(*sys.version_info[:3]))"')
+        FULLVERSION = system((python, '-c',
+            '"import sys; print(\'{:}.{:}.{:}\'.format(*sys.version_info[:3]))"'))
         FULLVERSION = FULLVERSION.strip()
     else:
         FULLVERSION = '{:}.{:}.{:}'.format(*sys.version_info[:3])
@@ -92,8 +92,8 @@ def relocate_python(python=None, appdir=None):
     APPDIR_SHARE = APPDIR + '/usr/share'
 
     if python:
-        HOST_PREFIX = system(
-            python, '-c', '"import sys; print(sys.prefix)"').strip()
+        HOST_PREFIX = system((
+            python, '-c', '"import sys; print(sys.prefix)"')).strip()
     else:
         HOST_PREFIX = sys.prefix
     HOST_BIN = HOST_PREFIX + '/bin'

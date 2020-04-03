@@ -23,7 +23,7 @@ def docker_run(image, extra_cmds):
         raise ValueError('Unsupported Docker image: ' + image)
 
     log('PULL', image)
-    system('docker', 'pull', image)
+    system(('docker', 'pull', image))
 
     script = [
         'set -e',
