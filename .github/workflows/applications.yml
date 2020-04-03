@@ -1,0 +1,30 @@
+name: PyPI
+on:
+  push:
+    paths:
+    - '.github/workflows/applications.yml'
+    - 'applications/**'
+    - 'python_appimage/**'
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['2.7', '3.5']
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.version }}
+
+    - name: Test scipy
+      run: |
+        python -m python_appimage build app applications/scipy
+        test -e scipy-x86_64.AppImage
+
+    - name: Test xonsh
+      run: |
+        python -m python_appimage build app applications/xonsh
+        test -e xonsh-x86_64.AppImage
