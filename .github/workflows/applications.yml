@@ -24,6 +24,11 @@ jobs:
         python -m python_appimage build app applications/scipy
         test -e scipy-x86_64.AppImage
 
+    - name: Test tasmotizer
+      run: |
+        python -m python_appimage build app applications/tasmotizer
+        test -e tasmotizer-x86_64.AppImage
+
     - name: Test xonsh
       run: |
         python -m python_appimage build app applications/xonsh

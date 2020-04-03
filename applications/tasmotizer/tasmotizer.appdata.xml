@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>tasmotizer</id>
+    <metadata_license>Python-2.0</metadata_license>
+    <project_license>Python-2.0</project_license>
+    <name>Tasmotizer</name>
+    <summary>ESP... The time has come to... Tasmotize</summary>
+    <description>
+        <p>  Python {{ python-fullversion }}  with PyQt5 and tasmotizer.py
+             bundled in an AppImage.
+        </p>
+    </description>
+    <launchable type="desktop-id">tasmotizer.desktop</launchable>
+    <url type="homepage">https://github.com/tasmota/tasmotizer</url>
+    <provides>
+        <binary>python{{ python-version }}</binary>
+    </provides>
+</component>

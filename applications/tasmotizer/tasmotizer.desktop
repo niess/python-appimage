@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=tasmotizer
+Exec=tasmotizer
+Comment= ESP... The time has come to... Tasmotize
+Icon=python
+Categories=System;
+Terminal=true
