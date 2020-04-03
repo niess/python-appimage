@@ -1,4 +1,4 @@
-name: PyPI
+name: Applications
 on:
   push:
     paths:
@@ -21,12 +21,15 @@ jobs:
 
     - name: Test scipy
       run: |
-        python -m python_appimage build app applications/scipy
+        python -m python_appimage build app applications/scipy                 \
+                                            --python-version=2.7               \
+                                            --python-tag=cp27-cp27mu
         test -e scipy-x86_64.AppImage
 
     - name: Test tasmotizer
       run: |
-        python -m python_appimage build app applications/tasmotizer
+        python -m python_appimage build app applications/tasmotizer            \
+                                            --linux-tag=manylinux2014_x86_64
         test -e tasmotizer-x86_64.AppImage
 
     - name: Test xonsh

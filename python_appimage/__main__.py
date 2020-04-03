@@ -62,6 +62,12 @@ def main():
         help='path to the application metadata')
     build_app_parser.add_argument('-n', '--name',
         help='application name')
+    build_app_parser.add_argument('-l', '--linux-tag',
+        help='linux compatibility tag (e.g. manylinux1_x86_64)')
+    build_app_parser.add_argument('--python-tag',
+        help='python compatibility tag (e.g. cp37-cp37m)')
+    build_app_parser.add_argument('-p', '--python-version',
+        help='python version (e.g. 3.8)')
 
     which_parser = subparsers.add_parser('which',
         description='Locate a binary dependency')

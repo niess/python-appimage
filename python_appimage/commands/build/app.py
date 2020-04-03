@@ -24,7 +24,8 @@ __all__ = ['execute']
 def _unpack_args(args):
     '''Unpack command line arguments
     '''
-    return args.appdir, args.name
+    return args.appdir, args.name, args.python_version, args.linux_tag,        \
+           args.python_tag
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
