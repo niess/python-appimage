@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
     <id>xonsh</id>
-    <metadata_license>Python-2.0</metadata_license>
+    <metadata_license>MIT</metadata_license>
     <project_license>Python-2.0</project_license>
     <name>Xonsh</name>
-    <summary>Xonsh on Python {{ python-fullversion }}
-    </summary>
+    <summary>Xonsh on Python {{ python-fullversion }}</summary>
     <description>
         <p>  Python {{ python-fullversion }} + Xonsh bundled in an AppImage.
         </p>

@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import sys
 
@@ -22,7 +23,7 @@ def build_appimage(appdir=None, destination=None):
     log('BUILD', appdir)
     ensure_appimagetool()
 
-    cmd = [APPIMAGETOOL, appdir]
+    cmd = [APPIMAGETOOL, '--no-appstream', appdir]
     if destination is not None:
         cmd.append(destination)
     cmd = ' '.join(cmd)
@@ -30,7 +31,10 @@ def build_appimage(appdir=None, destination=None):
     debug('SYSTEM', cmd)
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
-    stdout = []
+
+    appimage_pattern = re.compile('should be packaged as ([^ ]+[.]AppImage)')
+
+    stdout, appimage = [], None
     while True:
         out = decode(p.stdout.readline())
         stdout.append(out)
@@ -44,9 +48,14 @@ def build_appimage(appdir=None, destination=None):
                 elif line.startswith('Error'):
                     raise RuntimeError(line)
                 else:
+                    if destination is None:
+                        match = appimage_pattern.search(line)
+                        if match is not None:
+                            destination = match.group(1)
                     debug('APPIMAGE', line)
+
     rc = p.poll()
-    if rc != 0:
+    if rc != 0 and not os.path.exists(destination):
         print(''.join(stdout))
         sys.stdout.flush()
         raise RuntimeError('Could not build AppImage')
