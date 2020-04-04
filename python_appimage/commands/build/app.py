@@ -53,6 +53,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
             if v > version:
                 release, version = entry, v
         elif v == python_version:
+            version = python_version
             release = entry
             break
     if release is None:
