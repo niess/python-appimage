@@ -37,14 +37,18 @@ def patch_pip_install():
             path = os.path.join(sys.prefix, 'bin', exe)
 
             if (not os.path.isfile(path)) or (not os.access(path, os.X_OK)) or \
-               exe.startswith('python') or os.path.islink(path):
+               exe.startswith('python') or os.path.islink(path) or             \
+               exe.endswith('.pyc') or exe.endswith('.pyo'):
                 continue
 
-            with open(path, 'r') as f:
-                header = f.read(2)
-                if header != '#!':
-                    continue
-                content = f.read()
+            try:
+                with open(path, 'r') as f:
+                    header = f.read(2)
+                    if header != '#!':
+                        continue
+                    content = f.read()
+            except:
+                continue
 
             shebang, body = content.split(os.linesep, 1)
             shebang = shebang.split()
