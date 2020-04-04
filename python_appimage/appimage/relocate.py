@@ -149,6 +149,32 @@ def relocate_python(python=None, appdir=None):
     shutil.copymode(PYTHON_BIN + '/' + PYTHON_X_Y, target)
 
 
+    # Set or update symlinks to python
+    pythons = glob.glob(APPDIR_BIN + '/python?.*')
+    versions = [os.path.basename(python)[6:] for python in pythons]
+    latest2, latest3 = '0.0', '0.0'
+    for version in versions:
+        if version.startswith('2') and version >= latest2:
+            latest2 = version
+        elif version.startswith('3') and version >= latest3:
+            latest3 = version
+    if latest2 == VERSION:
+        remove_file(APPDIR_BIN + '/python2')
+        os.symlink(PYTHON_X_Y, APPDIR_BIN + '/python2')
+        if latest3 == '0.0':
+            log('SYMLINK', 'python, python2 to ' + PYTHON_X_Y)
+            remove_file(APPDIR_BIN + '/python')
+            os.symlink('python2', APPDIR_BIN + '/python')
+        else:
+            log('SYMLINK', 'python2 to ' + PYTHON_X_Y)
+    elif latest3 == VERSION:
+        log('SYMLINK', 'python, python3 to ' + PYTHON_X_Y)
+        remove_file(APPDIR_BIN + '/python3')
+        os.symlink(PYTHON_X_Y, APPDIR_BIN + '/python3')
+        remove_file(APPDIR_BIN + '/python')
+        os.symlink('python3', APPDIR_BIN + '/python')
+
+
     # Set a hook in Python for cleaning the path detection
     log('HOOK', '%s site packages', PYTHON_X_Y)
 
