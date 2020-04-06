@@ -85,6 +85,8 @@ def relocate_python(python=None, appdir=None):
         FULLVERSION = '{:}.{:}.{:}'.format(*sys.version_info[:3])
     VERSION = '.'.join(FULLVERSION.split('.')[:2])
     PYTHON_X_Y = 'python' + VERSION
+    PIP_X_Y = 'pip' + VERSION
+    PIP_X = 'pip' + VERSION[0]
 
     APPDIR = os.path.abspath(appdir)
     APPDIR_BIN = APPDIR + '/usr/bin'
@@ -123,6 +125,30 @@ def relocate_python(python=None, appdir=None):
     copy_tree(HOST_PKG, PYTHON_PKG)
     copy_tree(HOST_INC, PYTHON_INC)
 
+    pip_source = HOST_BIN + '/' + PIP_X_Y
+    if not os.path.exists(pip_source):
+        pip_source = HOST_BIN + '/' + PIP_X
+    if os.path.exists(pip_source):
+        with open(pip_source) as f:
+            f.readline()
+            body = f.read()
+
+        target = PYTHON_BIN + '/' + PIP_X_Y
+        with open(target, 'w') as f:
+            f.write('#! /bin/sh\n')
+            f.write(' '.join((
+                '"exec"',
+                '"$(dirname $(readlink -f ${0}))/' + PYTHON_X_Y + '"',
+                '"$0"',
+                '"$@"\n'
+            )))
+            f.write(body)
+        shutil.copymode(pip_source, target)
+
+        relpath = os.path.relpath(target, APPDIR_BIN)
+        make_tree(APPDIR_BIN)
+        os.symlink(relpath, APPDIR_BIN + '/' + PIP_X_Y)
+
 
     # Remove unrelevant files
     log('PRUNE', '%s packages', PYTHON_X_Y)
@@ -159,20 +185,44 @@ def relocate_python(python=None, appdir=None):
         elif version.startswith('3') and version >= latest3:
             latest3 = version
     if latest2 == VERSION:
-        remove_file(APPDIR_BIN + '/python2')
-        os.symlink(PYTHON_X_Y, APPDIR_BIN + '/python2')
+        python2 = APPDIR_BIN + '/python2'
+        remove_file(python2)
+        os.symlink(PYTHON_X_Y, python2)
+        has_pip = os.path.exists(APPDIR_BIN + '/' + PIP_X_Y)
+        if has_pip:
+            pip2 = APPDIR_BIN + '/pip2'
+            remove_file(pip2)
+            os.symlink(PIP_X_Y, pip2)
         if latest3 == '0.0':
             log('SYMLINK', 'python, python2 to ' + PYTHON_X_Y)
-            remove_file(APPDIR_BIN + '/python')
-            os.symlink('python2', APPDIR_BIN + '/python')
+            python = APPDIR_BIN + '/python'
+            remove_file(python)
+            os.symlink('python2', python)
+            if has_pip:
+                log('SYMLINK', 'pip, pip2 to ' + PIP_X_Y)
+                pip = APPDIR_BIN + '/pip'
+                remove_file(pip)
+                os.symlink('pip2', pip)
         else:
             log('SYMLINK', 'python2 to ' + PYTHON_X_Y)
+            if has_pip:
+                log('SYMLINK', 'pip2 to ' + PIP_X_Y)
     elif latest3 == VERSION:
         log('SYMLINK', 'python, python3 to ' + PYTHON_X_Y)
-        remove_file(APPDIR_BIN + '/python3')
-        os.symlink(PYTHON_X_Y, APPDIR_BIN + '/python3')
-        remove_file(APPDIR_BIN + '/python')
-        os.symlink('python3', APPDIR_BIN + '/python')
+        python3 = APPDIR_BIN + '/python3'
+        remove_file(python3)
+        os.symlink(PYTHON_X_Y, python3)
+        python = APPDIR_BIN + '/python'
+        remove_file(python)
+        os.symlink('python3', python)
+        if os.path.exists(APPDIR_BIN + '/' + PIP_X_Y):
+            log('SYMLINK', 'pip, pip3 to ' + PIP_X_Y)
+            pip3 = APPDIR_BIN + '/pip3'
+            remove_file(pip3)
+            os.symlink(PIP_X_Y, pip3)
+            pip = APPDIR_BIN + '/pip'
+            remove_file(pip)
+            os.symlink('pip3', pip)
 
 
     # Set a hook in Python for cleaning the path detection
