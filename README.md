@@ -28,7 +28,7 @@ packages we recommmed extracting the AppImage, e.g. as:
 mv squashfs-root python3.8
 rm -f python3.8.2-cp38-cp38-manylinux1_x86_64.AppImage
 
-export PATH="$(pwd)/python3.8/usr/bin:${PATH}
+export PATH="$(pwd)/python3.8/usr/bin:$PATH"
 ```
 
 Then, extra packages can be installed to the extracted AppDir using `pip`. For
