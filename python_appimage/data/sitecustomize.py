@@ -32,7 +32,11 @@ clean_path()
 def patch_pip_install():
     '''Change absolute shebangs to relative ones following a `pip` install
     '''
-    if ('pip' in sys.modules) and ('install' in sys.argv[1:]):
+    if not 'pip' in sys.modules:
+        return
+
+    args = sys.argv[1:]
+    if 'install' in args:
         for exe in os.listdir(sys.prefix + '/bin'):
             path = os.path.join(sys.prefix, 'bin', exe)
 
@@ -73,7 +77,23 @@ def patch_pip_install():
                     f.write(' '.join(cmd) + '\n')
                     f.write(body)
             except IOError:
-                pass
+                continue
+
+            usr_dir = os.path.join(sys.prefix, '../../usr/bin')
+            usr_exe = os.path.join(usr_dir, exe)
+            if os.path.exists(usr_exe):
+                continue
+            relpath = os.path.relpath(path, usr_dir)
+            os.symlink(relpath, usr_exe)
+
+    elif 'uninstall' in args:
+        usr_dir = os.path.join(sys.prefix, '../../usr/bin')
+        for exe in os.listdir(usr_dir):
+            path = os.path.join(usr_dir, exe)
+            if (not os.path.islink(path)) or                                   \
+               os.path.exists(os.path.realpath(path)):
+                continue
+            os.remove(path)
 
 
 atexit.register(patch_pip_install)
