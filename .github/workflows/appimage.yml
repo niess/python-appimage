@@ -4,6 +4,8 @@ on:
     paths:
     - '.github/workflows/appimage.yml'
     - 'python_appimage/**'
+  schedule:
+    - cron: '0 3 * * *'
 
 jobs:
   Build:
