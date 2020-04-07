@@ -29,6 +29,11 @@ def clean_path():
 clean_path()
 
 
+_bin_at_start = os.listdir(sys.prefix + '/bin')
+'''Initial content of the bin/ directory
+'''
+
+
 def patch_pip_install():
     '''Change absolute shebangs to relative ones following a `pip` install
     '''
@@ -38,12 +43,21 @@ def patch_pip_install():
     args = sys.argv[1:]
     if 'install' in args:
         for exe in os.listdir(sys.prefix + '/bin'):
+            if exe in _bin_at_start:
+                continue
+
             path = os.path.join(sys.prefix, 'bin', exe)
 
             if (not os.path.isfile(path)) or (not os.access(path, os.X_OK)) or \
                exe.startswith('python') or os.path.islink(path) or             \
                exe.endswith('.pyc') or exe.endswith('.pyo'):
                 continue
+
+            usr_dir = os.path.join(sys.prefix, '../../usr/bin')
+            usr_exe = os.path.join(usr_dir, exe)
+            if not os.path.exists(usr_exe):
+                relpath = os.path.relpath(path, usr_dir)
+                os.symlink(relpath, usr_exe)
 
             try:
                 with open(path, 'r') as f:
@@ -78,13 +92,6 @@ def patch_pip_install():
                     f.write(body)
             except IOError:
                 continue
-
-            usr_dir = os.path.join(sys.prefix, '../../usr/bin')
-            usr_exe = os.path.join(usr_dir, exe)
-            if os.path.exists(usr_exe):
-                continue
-            relpath = os.path.relpath(path, usr_dir)
-            os.symlink(relpath, usr_exe)
 
     elif 'uninstall' in args:
         usr_dir = os.path.join(sys.prefix, '../../usr/bin')
