@@ -55,10 +55,17 @@ existing Python AppImage and a recipe folder. The recipe folder contains the
 app metadata, a Python requirements file and an entry point script. Examples of
 recipes can be found on GitHub in the [applications][APPLICATIONS] folder.
 
+Alternatively, you can also manualy extract one of the Python [AppImages][APPIMAGE]
+as explained above and directly modify the content, e.g. `pip install` your custom
+packages. Then, simply rebuild the AppImage using your favourite tool, e.g.
+[appimagetool][APPIMAGETOOL], [linuxdeploy][LINUXDEPLOY] or `python-appimage`.
+
 
 [APPIMAGE]: https://appimage.org
+[APPIMAGETOOL]: https://appimage.github.io/appimagetool
 [APPLICATIONS]: https://github.com/niess/python-appimage/tree/master/applications
 [GITHUB]: https://github.com/niess/python-appimage
+[LINUXDEPLOY]: https://github.com/linuxdeploy/linuxdeploy
 [MANYLINUX]: https://github.com/pypa/manylinux
 [PYPI]: https://pypi.org/project/python-appimage
 [RELEASES]: https://github.com/niess/python-appimage/releases
