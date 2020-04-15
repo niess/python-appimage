@@ -8,7 +8,7 @@ We provide relocatable Python runtimes as [AppImages][APPIMAGE]. These runtimes
 are extracted from [manylinux][MANYLINUX] Docker images. The corresponding
 images are available as GitHub [releases][RELEASES]. They are labeled according
 to [wheels][WHEEL] compatibility tags. Our Python AppImages are updated
-daily.
+weekly.
 
 Running Python from these [AppImages][APPIMAGE] is as simple as downloading a
 single file and changing its mode to executable, e.g.  as:
