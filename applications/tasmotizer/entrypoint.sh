@@ -1,1 +1,1 @@
-{{ python-executable }} ${APPDIR}/opt/python{{ python-version }}/bin/tasmotizer.py "$@"
+{{ python-executable }} -s ${APPDIR}/opt/python{{ python-version }}/bin/tasmotizer.py "$@"
