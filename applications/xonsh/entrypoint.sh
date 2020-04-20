@@ -1,1 +1,1 @@
-{{ python-executable }} -u -c 'from xonsh.main import main; main()' "$@"
+{{ python-executable }} -u "${APPDIR}/opt/python{{ python-version }}/bin/xonsh" "$@"
