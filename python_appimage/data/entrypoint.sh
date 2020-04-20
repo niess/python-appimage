@@ -11,7 +11,7 @@ done
 
 # Get the executable name, i.e. the AppImage or the python binary if running from an
 # extracted image
-executable="${APPDIR}/opt/{{ python }}/{{ python }}"
+executable="${APPDIR}/opt/{{ python }}/bin/{{ python }}"
 if [[ "${ARGV0}" =~ "/" ]]; then
     executable="$(cd $(dirname ${ARGV0}) && pwd)/$(basename ${ARGV0})"
 elif [[ "${ARGV0}" != "" ]]; then
