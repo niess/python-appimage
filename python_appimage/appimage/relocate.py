@@ -9,7 +9,7 @@ from ..utils.deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,    \
 from ..utils.fs import make_tree, copy_file, copy_tree, remove_file, remove_tree
 from ..utils.log import debug, log
 from ..utils.system import ldd, system
-from ..utils.template import copy_template
+from ..utils.template import copy_template, load_template
 
 
 __all__ = ["patch_binary", "relocate_python"]
@@ -122,6 +122,10 @@ def relocate_python(python=None, appdir=None):
     target = PYTHON_BIN + '/' + PYTHON_X_Y
     copy_file(source, target, update=True)
 
+    relpath = os.path.relpath(target, APPDIR_BIN)
+    make_tree(APPDIR_BIN)
+    os.symlink(relpath, APPDIR_BIN + '/' + PYTHON_X_Y)
+
     copy_tree(HOST_PKG, PYTHON_PKG)
     copy_tree(HOST_INC, PYTHON_INC)
 
@@ -146,7 +150,6 @@ def relocate_python(python=None, appdir=None):
         shutil.copymode(pip_source, target)
 
         relpath = os.path.relpath(target, APPDIR_BIN)
-        make_tree(APPDIR_BIN)
         os.symlink(relpath, APPDIR_BIN + '/' + PIP_X_Y)
 
 
@@ -159,20 +162,6 @@ def relocate_python(python=None, appdir=None):
     matches = glob.glob(PYTHON_PKG + '/config-*-linux-*')
     for path in matches:
         remove_tree(path)
-
-
-    # Wrap the Python executable
-    log('WRAP', '%s executable', PYTHON_X_Y)
-
-    with open(PREFIX + '/data/python-wrapper.sh') as f:
-        text = f.read()
-    text = text.replace('{{PYTHON}}', PYTHON_X_Y)
-
-    make_tree(APPDIR_BIN)
-    target = APPDIR_BIN + '/' + PYTHON_X_Y
-    with open(target, 'w') as f:
-        f.write(text)
-    shutil.copymode(PYTHON_BIN + '/' + PYTHON_X_Y, target)
 
 
     # Set or update symlinks to python
@@ -285,7 +274,8 @@ def relocate_python(python=None, appdir=None):
     apprun = APPDIR + '/AppRun'
     if not os.path.exists(apprun):
         log('INSTALL', 'AppRun')
-        entrypoint = '"${{APPDIR}}/usr/bin/python{:}" "$@"'.format(VERSION)
+        entrypoint_path = PREFIX + '/data/entrypoint.sh'
+        entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
         _copy_template('apprun.sh', apprun, entrypoint=entrypoint)
 
 
