@@ -105,11 +105,11 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         with open(requirements_path) as f:
             for line in f:
                 line = line.strip()
-                if line.startswith('#'):
+                if (not line) or line.startswith('#'):
                     continue
                 requirements_list.append(line)
 
-    requirements = sorted(requirements_list)
+    requirements = sorted(os.path.basename(r) for r in requirements_list)
     n = len(requirements)
     if n == 0:
         requirements = ''
@@ -218,10 +218,14 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
             system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U',
                    '--no-warn-script-location', 'pip'), exclude=deprecation)
             for requirement in requirements_list:
-                log('BUNDLE', requirement)
+                if requirement.startswith('git+'):
+                    url, name = os.path.split(requirement)
+                    log('BUNDLE', name + ' from ' + url[4:])
+                else:
+                    log('BUNDLE', requirement)
                 system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U',
                        '--no-warn-script-location', requirement),
-                       exclude=deprecation)
+                       exclude=(deprecation, '  Running command git clone -q'))
 
 
         # Bundle the entry point
