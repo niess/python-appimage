@@ -25,66 +25,76 @@ def _unpack_args(args):
     '''Unpack command line arguments
     '''
     return args.appdir, args.name, args.python_version, args.linux_tag,        \
-           args.python_tag
+           args.python_tag, args.base_image
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
-            python_tag=None):
+            python_tag=None, base_image=None):
     '''Build a Python application using a base AppImage
     '''
 
-    # Download releases meta data
-    content = urlopen(
-        'https://api.github.com/repos/niess/python-appimage/releases').read()
-    releases = json.loads(content.decode())
+    if base_image is None:
+        # Download releases meta data
+        content = urlopen(
+            'https://api.github.com/repos/niess/python-appimage/releases')     \
+            .read()
+        releases = json.loads(content.decode())
 
 
-    # Fetch the requested Python version or the latest if no specific version
-    # was requested
-    release, version = None, '0.0'
-    for entry in releases:
-        tag = entry['tag_name']
-        if not tag.startswith('python'):
-            continue
-        v = tag[6:]
-        if python_version is None:
-            if v > version:
-                release, version = entry, v
-        elif v == python_version:
-            version = python_version
-            release = entry
-            break
-    if release is None:
-        raise ValueError('could not find base image for Python ' +
-                         python_version)
-    elif python_version is None:
-        python_version = version
+        # Fetch the requested Python version or the latest if no specific
+        # version was requested
+        release, version = None, '0.0'
+        for entry in releases:
+            tag = entry['tag_name']
+            if not tag.startswith('python'):
+                continue
+            v = tag[6:]
+            if python_version is None:
+                if v > version:
+                    release, version = entry, v
+            elif v == python_version:
+                version = python_version
+                release = entry
+                break
+        if release is None:
+            raise ValueError('could not find base image for Python ' +
+                             python_version)
+        elif python_version is None:
+            python_version = version
 
 
-    # Check for a suitable image
-    if linux_tag is None:
-        linux_tag = 'manylinux1_' + platform.machine()
+        # Check for a suitable image
+        if linux_tag is None:
+            linux_tag = 'manylinux1_' + platform.machine()
 
-    if python_tag is None:
-        v = ''.join(version.split('.'))
-        python_tag = 'cp{0:}-cp{0:}'.format(v)
-        if version < '3.8':
-            python_tag += 'm'
+        if python_tag is None:
+            v = ''.join(version.split('.'))
+            python_tag = 'cp{0:}-cp{0:}'.format(v)
+            if version < '3.8':
+                python_tag += 'm'
 
-    target_tag = '-'.join((python_tag, linux_tag))
+        target_tag = '-'.join((python_tag, linux_tag))
 
-    assets = release['assets']
-    for asset in assets:
-        match = _tag_pattern.search(asset['name'])
-        if str(match.group(2)) == target_tag:
-            python_fullversion = str(match.group(1))
-            break
+        assets = release['assets']
+        for asset in assets:
+            match = _tag_pattern.search(asset['name'])
+            if str(match.group(2)) == target_tag:
+                python_fullversion = str(match.group(1))
+                break
+        else:
+            raise ValueError('Could not find base image for tag ' + target_tag)
+
+        base_image = asset['browser_download_url']
     else:
-        raise ValueError('Could not find base image for tag ' + target_tag)
-
-    base_image = asset['browser_download_url']
+        match = _tag_pattern.search(base_image)
+        if match is None:
+            raise ValueError('Invalide base image ' + base_image)
+        tag = str(match.group(2))
+        python_tag, linux_tag = tag.rsplit('-', 1)
+        python_fullversion = str(match.group(1))
+        python_version, _ = python_fullversion.rsplit('.', 1)
 
 
     # Set the dictionary for template files
@@ -132,9 +142,13 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
 
         # Extract the base AppImage
         log('EXTRACT', '%s', os.path.basename(base_image))
-        urlretrieve(base_image, 'base.AppImage')
-        os.chmod('base.AppImage', stat.S_IRWXU)
-        system(('./base.AppImage', '--appimage-extract'))
+        if base_image.startswith('http'):
+            urlretrieve(base_image, 'base.AppImage')
+            os.chmod('base.AppImage', stat.S_IRWXU)
+            base_image = './base.AppImage'
+        elif not base_image.startswith('/'):
+            base_image = os.path.join(pwd, base_image)
+        system((base_image, '--appimage-extract'))
         system(('mv', 'squashfs-root', 'AppDir'))
 
 
