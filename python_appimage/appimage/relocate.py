@@ -268,6 +268,14 @@ def relocate_python(python=None, appdir=None):
                 if not tkpath:
                     raise ValueError('could not find ' + tkpath)
                 copy_tree(tkpath, tcltkdir + '/tk' + tk_version)
+        tcltk_env = '''
+# Export TCl/Tk
+export TCL_LIBRARY="${{APPDIR}}/usr/share/tcltk/tcl{tk_version:}"
+export TK_LIBRARY="${{APPDIR}}/usr/share/tcltk/tk{tk_version:}"
+export TKPATH="${{TK_LIBRARY}}"
+'''.format(tk_version=tk_version)
+    else:
+        tcltk_env = ''
 
 
     # Bundle the entry point
@@ -276,7 +284,8 @@ def relocate_python(python=None, appdir=None):
         log('INSTALL', 'AppRun')
         entrypoint_path = PREFIX + '/data/entrypoint.sh'
         entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
-        _copy_template('apprun.sh', apprun, entrypoint=entrypoint)
+        dictionary = {'entrypoint': entrypoint, 'tcltk-env': tcltk_env}
+        _copy_template('apprun.sh', apprun, **dictionary)
 
 
     # Bundle the desktop file
