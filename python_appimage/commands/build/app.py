@@ -7,7 +7,7 @@ import shutil
 import stat
 import struct
 
-from ...appimage import build_appimage
+from ...appimage import build_appimage, tcltk_env_string
 from ...utils.compat import decode
 from ...utils.deps import PREFIX
 from ...utils.fs import copy_file, make_tree, remove_file, remove_tree
@@ -248,8 +248,12 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
             entrypoint_path = entrypoint_path[0]
             log('BUNDLE', os.path.basename(entrypoint_path))
             entrypoint = load_template(entrypoint_path, **dictionary)
+            python_pkg = 'AppDir/opt/python{0:}/lib/python{0:}'.format(
+                python_version)
+            dictionary = {'entrypoint': entrypoint,
+                          'tcltk-env': tcltk_env_string(python_pkg)}
             copy_template(PREFIX + '/data/apprun.sh', 'AppDir/AppRun',
-                          entrypoint=entrypoint)
+                          **dictionary)
 
 
         # Build the new AppImage
