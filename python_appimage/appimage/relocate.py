@@ -12,12 +12,41 @@ from ..utils.system import ldd, system
 from ..utils.template import copy_template, load_template
 
 
-__all__ = ["patch_binary", "relocate_python"]
+__all__ = ["patch_binary", "relocate_python", "tcltk_env_string"]
 
 
 def _copy_template(name, destination, **kwargs):
     path = os.path.join(PREFIX, 'data', name)
     copy_template(path, destination, **kwargs)
+
+
+def _get_tk_version(python_pkg):
+    tkinter = glob.glob(python_pkg + '/lib-dynload/_tkinter*.so')
+    if tkinter:
+        tkinter = tkinter[0]
+        for dep in ldd(tkinter):
+            name = os.path.basename(dep)
+            if name.startswith('libtk'):
+                match = re.search('libtk([0-9]+[.][0-9]+)', name)
+                return match.group(1)
+        else:
+            raise RuntimeError('could not guess Tcl/Tk version')
+
+
+def tcltk_env_string(python_pkg):
+    '''Environment for using AppImage's TCl/Tk
+    '''
+    tk_version = _get_tk_version(python_pkg)
+
+    if tk_version:
+        return '''
+# Export TCl/Tk
+export TCL_LIBRARY="${{APPDIR}}/usr/share/tcltk/tcl{tk_version:}"
+export TK_LIBRARY="${{APPDIR}}/usr/share/tcltk/tk{tk_version:}"
+export TKPATH="${{TK_LIBRARY}}"
+'''.format(tk_version=tk_version)
+    else:
+        return ''
 
 
 _excluded_libs = None
@@ -238,18 +267,8 @@ def relocate_python(python=None, appdir=None):
 
 
     # Copy shared data for TCl/Tk
-    tkinter = glob.glob(PYTHON_PKG + '/lib-dynload/_tkinter*.so')
-    if tkinter:
-        tkinter = tkinter[0]
-        for dep in ldd(tkinter):
-            name = os.path.basename(dep)
-            if name.startswith('libtk'):
-                match = re.search('libtk([0-9]+[.][0-9]+)', name)
-                tk_version = match.group(1)
-                break
-        else:
-            raise RuntimeError('could not guess Tcl/Tk version')
-
+    tk_version = _get_tk_version(PYTHON_PKG)
+    if tk_version is not None:
         tcltkdir = APPDIR_SHARE + '/tcltk'
         if (not os.path.exists(tcltkdir + '/tcl' + tk_version)) or             \
            (not os.path.exists(tcltkdir + '/tk' + tk_version)):
@@ -268,14 +287,6 @@ def relocate_python(python=None, appdir=None):
                 if not tkpath:
                     raise ValueError('could not find ' + tkpath)
                 copy_tree(tkpath, tcltkdir + '/tk' + tk_version)
-        tcltk_env = '''
-# Export TCl/Tk
-export TCL_LIBRARY="${{APPDIR}}/usr/share/tcltk/tcl{tk_version:}"
-export TK_LIBRARY="${{APPDIR}}/usr/share/tcltk/tk{tk_version:}"
-export TKPATH="${{TK_LIBRARY}}"
-'''.format(tk_version=tk_version)
-    else:
-        tcltk_env = ''
 
 
     # Bundle the entry point
@@ -284,7 +295,9 @@ export TKPATH="${{TK_LIBRARY}}"
         log('INSTALL', 'AppRun')
         entrypoint_path = PREFIX + '/data/entrypoint.sh'
         entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
-        dictionary = {'entrypoint': entrypoint, 'tcltk-env': tcltk_env}
+        dictionary = {'entrypoint': entrypoint,
+                      'shebang': '#! /bin/bash',
+                      'tcltk-env': tcltk_env_string(PYTHON_PKG)}
         _copy_template('apprun.sh', apprun, **dictionary)
 
 
