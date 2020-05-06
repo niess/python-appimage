@@ -247,10 +247,17 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         if entrypoint_path:
             entrypoint_path = entrypoint_path[0]
             log('BUNDLE', os.path.basename(entrypoint_path))
+
+            with open(entrypoint_path) as f:
+                shebang = f.readline().strip()
+            if not shebang.startswith('#!'):
+                shebang = '#! /bin/bash'
+
             entrypoint = load_template(entrypoint_path, **dictionary)
             python_pkg = 'AppDir/opt/python{0:}/lib/python{0:}'.format(
                 python_version)
             dictionary = {'entrypoint': entrypoint,
+                          'shebang': shebang,
                           'tcltk-env': tcltk_env_string(python_pkg)}
             copy_template(PREFIX + '/data/apprun.sh', 'AppDir/AppRun',
                           **dictionary)

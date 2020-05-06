@@ -296,6 +296,7 @@ def relocate_python(python=None, appdir=None):
         entrypoint_path = PREFIX + '/data/entrypoint.sh'
         entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
         dictionary = {'entrypoint': entrypoint,
+                      'shebang': '#! /bin/bash',
                       'tcltk-env': tcltk_env_string(PYTHON_PKG)}
         _copy_template('apprun.sh', apprun, **dictionary)
 

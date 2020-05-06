@@ -1,4 +1,4 @@
-#! /bin/bash
+{{ shebang }}
 
 # Export APPRUN if running from an extracted image
 self="$(readlink -f -- $0)"
