@@ -60,6 +60,63 @@ as explained above and directly modify the content, e.g. `pip install` your cust
 packages. Then, simply rebuild the AppImage using your favourite tool, e.g.
 [appimagetool][APPIMAGETOOL], [linuxdeploy][LINUXDEPLOY] or `python-appimage`.
 
+## Make releases with AppImage in GitHub release assets with [Rever](https://regro.github.io/rever-docs/)
+
+We recommend to test this process in safe place. The best way is to fork or copy the repository you're working on
+to the distinct GitHub repository.
+
+How to release AppImages with release your app on GitHub:
+
+1. You have PyPi package with `setup.py` file and `pip install -U .` works perfect. 
+
+2. You have AppImage description files like in 
+[applications/xonsh](https://github.com/niess/python-appimage/tree/master/applications/xonsh) directory. 
+And your AppImage can be build with:
+```
+python -m python_appimage build app ./path/to/package
+```
+
+3. Install [rever](https://regro.github.io/rever-docs/):
+```
+pip install -U rever
+```
+
+4. Create `appimage` directory near `setup.py` with AppImage description files 
+and rename the `appimage/requirements.txt` to `appimage/pre-requirements.txt`. In release process your package directory 
+will be added to `pre-requiriments.txt` and created `requirements.txt`.  
+
+5. Create `rever.xsh` file near `setup.py`: 
+```
+$ACTIVITIES = ['tag', 'push_tag', 'appimage', 'ghrelease']
+
+$GITHUB_ORG = 'anki-code'
+$PROJECT = $GITHUB_REPO = 'mypackage'
+
+$TAG_REMOTE = 'git@github.com:anki-code/mypackage.git'
+$TAG_TARGET = 'master'
+$PUSH_TAG_PROTOCOL='ssh'
+
+# The name of your AppImage will be `<Name from .desktop-file>-<system>.AppImage` (`xonsh-x86_64.AppImage` for example).
+$GHRELEASE_ASSETS = ['mypackage-x86_64.AppImage']
+```
+ 
+6. Run check and make release. In this example we have 4 steps: `tag`, `push_tag`, `appimage`, `ghrelease`. This means that rever will create `0.0.1` tag, 
+push it to the remote, then build AppImage and create GitHub release:
+```
+rever check
+rever 0.0.1
+```  
+
+7. Check the GitHub release page for AppImage assets
+
+## Projects using [python-appimage][PYTHON_APPIMAGE]
+* [grand/python](https://github.com/grand-mother/python) - Contained, portable
+  and modern python for [GRAND][GRAND] running from an AppImage
+* [xxh](https://github.com/xxh/xxh) - Bring your favorite shell wherever you go
+  through the ssh 
+* [xonsh](https://github.com/xonsh/xonsh) - Python-powered, cross-platform, Unix-gazing 
+  shell language and command prompt
+
 
 [APPIMAGE]: https://appimage.org
 [APPIMAGETOOL]: https://appimage.github.io/appimagetool
@@ -71,3 +128,5 @@ packages. Then, simply rebuild the AppImage using your favourite tool, e.g.
 [RELEASES]: https://github.com/niess/python-appimage/releases
 [WHEEL]: https://pythonwheels.com
 [WORKFLOWS]: https://github.com/niess/python-appimage/tree/master/.github/workflows
+[GRAND]: http://grand.cnrs.fr
+[PYTHON_APPIMAGE]: https://github.com/niess/python-appimage
