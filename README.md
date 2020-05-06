@@ -116,7 +116,7 @@ rever 0.0.1
   through the ssh 
 * [xonsh](https://github.com/xonsh/xonsh) - Python-powered, cross-platform, Unix-gazing 
   shell language and command prompt
-* [rever](https://github.com/regro/rever) - cross-platform software release tool.
+* [rever](https://github.com/regro/rever) - Cross-platform software release tool.
 
 
 [APPIMAGE]: https://appimage.org
