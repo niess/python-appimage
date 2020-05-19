@@ -1,4 +1,5 @@
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -23,7 +24,8 @@ def build_appimage(appdir=None, destination=None):
     log('BUILD', appdir)
     ensure_appimagetool()
 
-    cmd = [APPIMAGETOOL, '--no-appstream', appdir]
+    arch = platform.machine()
+    cmd = ['ARCH=' + arch, APPIMAGETOOL, '--no-appstream', appdir]
     if destination is not None:
         cmd.append(destination)
     cmd = ' '.join(cmd)
