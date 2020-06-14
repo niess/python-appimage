@@ -82,6 +82,11 @@ def main():
     if args.verbosity:
         logging.getLogger().setLevel(args.verbosity)
 
+    # check if no arguments are passed
+    if args.command is None:
+        parser.print_help()
+        return
+
     # Call the requested command
     module = '.commands.' + args.command
     if args.sub_command:
