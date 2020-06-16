@@ -82,11 +82,24 @@ def main():
     if args.verbosity:
         logging.getLogger().setLevel(args.verbosity)
 
+    # check if no arguments are passed
+    if args.command is None:
+        parser.print_help()
+        return
+
     # Call the requested command
     module = '.commands.' + args.command
     if args.sub_command:
         module += '.' + args.sub_command
     command = import_module(module, package=__package__)
+
+    # check if the module has a 'execute' subcommand
+    # if not, display the help message
+    if not hasattr(command, 'execute'):
+        locals().get('{}_parser'.format(args.command)).print_help()
+        return
+
+    # execute the command
     command.execute(*command._unpack_args(args))
 
 
