@@ -6,7 +6,7 @@ import sys
 
 from ..utils.deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,    \
                          ensure_patchelf
-from ..utils.fs import make_tree, copy_file, copy_tree, remove_file, remove_tree
+from ..utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
 from ..utils.log import debug, log
 from ..utils.system import ldd, system
 from ..utils.template import copy_template, load_template
@@ -43,8 +43,20 @@ def tcltk_env_string(python_pkg):
 # Export TCl/Tk
 export TCL_LIBRARY="${{APPDIR}}/usr/share/tcltk/tcl{tk_version:}"
 export TK_LIBRARY="${{APPDIR}}/usr/share/tcltk/tk{tk_version:}"
-export TKPATH="${{TK_LIBRARY}}"
-'''.format(tk_version=tk_version)
+export TKPATH="${{TK_LIBRARY}}"'''.format(
+    tk_version=tk_version)
+    else:
+        return ''
+
+
+def cert_file_env_string(cert_file):
+    '''Environment for using a bundled certificate
+    '''
+    if cert_file:
+        return '''
+# Export SSL certificate
+export SSL_CERT_FILE="${{APPDIR}}{cert_file:}"'''.format(
+    cert_file=cert_file)
     else:
         return ''
 
@@ -289,6 +301,17 @@ def relocate_python(python=None, appdir=None):
                 copy_tree(tkpath, tcltkdir + '/tk' + tk_version)
 
 
+    # Copy any SSL certificate
+    cert_file = os.getenv('SSL_CERT_FILE')
+    if cert_file:
+        # Package certificates as well for SSL
+        # (see https://github.com/niess/python-appimage/issues/24)
+        dirname, basename = os.path.split(cert_file)
+        make_tree('AppDir' + dirname)
+        copy_file(cert_file, 'AppDir' + cert_file)
+        log('INSTALL', basename)
+
+
     # Bundle the entry point
     apprun = APPDIR + '/AppRun'
     if not os.path.exists(apprun):
@@ -297,7 +320,8 @@ def relocate_python(python=None, appdir=None):
         entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
         dictionary = {'entrypoint': entrypoint,
                       'shebang': '#! /bin/bash',
-                      'tcltk-env': tcltk_env_string(PYTHON_PKG)}
+                      'tcltk-env': tcltk_env_string(PYTHON_PKG),
+                      'cert-file': cert_file_env_string(cert_file)}
         _copy_template('apprun.sh', apprun, **dictionary)
 
 
