@@ -12,7 +12,8 @@ from ..utils.system import ldd, system
 from ..utils.template import copy_template, load_template
 
 
-__all__ = ["patch_binary", "relocate_python", "tcltk_env_string"]
+__all__ = ["cert_file_env_string", "patch_binary", "relocate_python",
+           "tcltk_env_string"]
 
 
 def _copy_template(name, destination, **kwargs):
