@@ -25,6 +25,7 @@ jobs:
                                             --python-version=2.7               \
                                             --python-tag=cp27-cp27mu
         test -e scipy-x86_64.AppImage
+        ./scipy-x86_64.AppImage -c 'import numpy, pandas, scipy'
 
     - name: Test tasmotizer
       run: |
@@ -36,3 +37,4 @@ jobs:
       run: |
         python -m python_appimage build app applications/xonsh
         test -e xonsh-x86_64.AppImage
+        ./xonsh-x86_64.AppImage -c 'import xonsh'
