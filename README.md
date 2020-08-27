@@ -60,6 +60,15 @@ as explained above and directly modify the content, e.g. `pip install` your cust
 packages. Then, simply rebuild the AppImage using your favourite tool, e.g.
 [appimagetool][APPIMAGETOOL], [linuxdeploy][LINUXDEPLOY] or `python-appimage`.
 
+## Projects using [python-appimage][PYTHON_APPIMAGE]
+* [grand/python](https://github.com/grand-mother/python) - Contained, portable
+  and modern python for [GRAND][GRAND] running from an AppImage
+* [xxh](https://github.com/xxh/xxh) - Bring your favorite shell wherever you go
+  through the ssh 
+* [xonsh](https://github.com/xonsh/xonsh) - Python-powered, cross-platform, Unix-gazing 
+  shell language and command prompt
+* [rever](https://github.com/regro/rever) - Cross-platform software release tool.
+
 
 [APPIMAGE]: https://appimage.org
 [APPIMAGETOOL]: https://appimage.github.io/appimagetool
@@ -71,3 +80,5 @@ packages. Then, simply rebuild the AppImage using your favourite tool, e.g.
 [RELEASES]: https://github.com/niess/python-appimage/releases
 [WHEEL]: https://pythonwheels.com
 [WORKFLOWS]: https://github.com/niess/python-appimage/tree/master/.github/workflows
+[GRAND]: http://grand.cnrs.fr
+[PYTHON_APPIMAGE]: https://github.com/niess/python-appimage
