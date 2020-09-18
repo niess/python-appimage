@@ -142,8 +142,6 @@ def relocate_python(python=None, appdir=None):
         HOST_PREFIX = sys.prefix
     HOST_BIN = HOST_PREFIX + '/bin'
     HOST_INC = HOST_PREFIX + '/include/' + PYTHON_X_Y
-    if not os.path.exists(HOST_INC):
-        HOST_INC += 'm'
     HOST_LIB = HOST_PREFIX + '/lib'
     HOST_PKG = HOST_LIB + '/' + PYTHON_X_Y
 
@@ -152,6 +150,10 @@ def relocate_python(python=None, appdir=None):
     PYTHON_INC = PYTHON_PREFIX + '/include/' + PYTHON_X_Y
     PYTHON_LIB = PYTHON_PREFIX + '/lib'
     PYTHON_PKG = PYTHON_LIB + '/' + PYTHON_X_Y
+
+    if not os.path.exists(HOST_INC):
+        HOST_INC += 'm'
+        PYTHON_INC += 'm'
 
 
     # Copy the running Python's install
