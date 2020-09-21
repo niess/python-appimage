@@ -15,12 +15,16 @@ jobs:
         image: ['1', '2010', '2014']
         arch: [x86_64, i686]
         tag: [cp27-cp27m, cp27-cp27mu, cp35-cp35m, cp36-cp36m, cp37-cp37m,
-              cp38-cp38]
+              cp38-cp38, cp39-cp39]
         exclude:
+          - image: '2010'
+            tag: cp39-cp39
           - image: '2014'
             tag: cp27-cp27m
           - image: '2014'
             tag: cp27-cp27mu
+          - image: '2014'
+            tag: cp39-cp39
 
     steps:
     - uses: actions/checkout@v2
