@@ -89,8 +89,10 @@ def main():
 
     # Call the requested command
     module = '.commands.' + args.command
-    if args.sub_command:
+    try:
         module += '.' + args.sub_command
+    except AttributeError:
+        pass
     command = import_module(module, package=__package__)
 
     # check if the module has a 'execute' subcommand
