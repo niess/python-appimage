@@ -30,6 +30,8 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
       run: |
         # Build the AppImage
         python -m python_appimage build manylinux \
