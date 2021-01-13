@@ -15,10 +15,10 @@ single file and changing its mode to executable, e.g.  as:
 
 ```sh
 wget https://github.com/niess/python-appimage/releases/download/\
-python3.8/python3.8.5-cp38-cp38-manylinux1_x86_64.AppImage
-chmod +x python3.8.5-cp38-cp38-manylinux1_x86_64.AppImage
+python3.9/python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage
+chmod +x python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage
 
-./python3.8.5-cp38-cp38-manylinux1_x86_64.AppImage
+./python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage
 ```
 
 This should start a Python 3.8 interactive session on _almost_ any Linux
@@ -30,11 +30,11 @@ its standard library.  However, if you plan to install extra packages we
 recommend extracting the AppImage, e.g. as:
 
 ```sh
-./python3.8.5-cp38-cp38-manylinux1_x86_64.AppImage --appimage-extract
-mv squashfs-root python3.8
-rm -f python3.8.5-cp38-cp38-manylinux1_x86_64.AppImage
+./python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage --appimage-extract
+mv squashfs-root python3.9
+rm -f python3.9.1-cp39-cp39-manylinux1_x86_64.AppImage
 
-export PATH="$(pwd)/python3.8/usr/bin:$PATH"
+export PATH="$(pwd)/python3.9/usr/bin:$PATH"
 ```
 
 Then, extra packages can be installed to the extracted AppDir using `pip`. For
