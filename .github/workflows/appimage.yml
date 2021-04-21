@@ -18,13 +18,13 @@ jobs:
               cp38-cp38, cp39-cp39]
         exclude:
           - image: '2010'
-            tag: cp39-cp39
+            tag: cp27-cp27m
+          - image: '2010'
+            tag: cp27-cp27mu
           - image: '2014'
             tag: cp27-cp27m
           - image: '2014'
             tag: cp27-cp27mu
-          - image: '2014'
-            tag: cp39-cp39
 
     steps:
     - uses: actions/checkout@v2
