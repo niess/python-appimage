@@ -67,7 +67,7 @@ def execute(tag, abi, contained=False):
                     # Use a manylinux2014 Docker image (CentOS 7) in order to
                     # pack the image.
                     script = (
-                        python + ' -m python_appimage ' + argv + ' --contained',
+                        'python -m python_appimage ' + argv + ' --contained',
                         ''
                     )
                     docker_run('quay.io/pypa/manylinux2014_' + arch, script)
