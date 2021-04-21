@@ -55,27 +55,28 @@ def execute(tag, abi, contained=False):
 
             appimage_name = _get_appimage_name(abi, tag)
 
-            if tag.startswith('1_'):
-                # appimagetool does not run on manylinux1 (CentOS 5). Below is
-                # a patch for this specific case.
+            if tag.startswith('1_') or tag.startswith('2010_'):
+                # appimagetool does not run on manylinux1 (CentOS 5) or
+                # manylinux2010 (CentOS 6). Below is a patch for these specific
+                # cases.
                 arch = tag.split('_', 1)[-1]
                 if arch == platform.machine():
                     # Pack the image directly from the host
                     build_appimage(destination=appimage_name)
                 else:
-                    # Use a manylinux2010 Docker image (CentOS 6) in order to
+                    # Use a manylinux2014 Docker image (CentOS 7) in order to
                     # pack the image.
                     script = (
                         python + ' -m python_appimage ' + argv + ' --contained',
                         ''
                     )
-                    docker_run('quay.io/pypa/manylinux2010_' + arch, script)
+                    docker_run('quay.io/pypa/manylinux2014_' + arch, script)
 
             shutil.move(appimage_name, os.path.join(pwd, appimage_name))
 
     else:
         # We are running within a manylinux Docker image
-        is_manylinux1 = tag.startswith('1_')
+        is_manylinux_old = tag.startswith('1_') or tag.startswith('2010_')
 
         if not os.path.exists('AppDir'):
             # Relocate the targeted manylinux Python installation
@@ -83,11 +84,11 @@ def execute(tag, abi, contained=False):
         else:
             # This is a second stage build. The Docker image has actually been
             # overriden (see above).
-            is_manylinux1 = False
+            is_manylinux_old = False
 
-        if is_manylinux1:
+        if is_manylinux_old:
             # Build only the AppDir when running within a manylinux1 Docker
-            # image because appimagetool does not support CentOS 5.
+            # image because appimagetool does not support CentOS 5 or CentOS 6.
             pass
         else:
             build_appimage(destination=_get_appimage_name(abi, tag))
