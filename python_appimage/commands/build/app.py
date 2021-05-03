@@ -229,7 +229,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         # Bundle the requirements
         if requirements_list:
             deprecation = 'DEPRECATION: Python 2.7 reached the end of its life'
-            system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U',
+            system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', '--use-feature=in-tree-build',
                    '--no-warn-script-location', 'pip'), exclude=deprecation)
             for requirement in requirements_list:
                 if requirement.startswith('git+'):
@@ -237,7 +237,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                     log('BUNDLE', name + ' from ' + url[4:])
                 else:
                     log('BUNDLE', requirement)
-                system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U',
+                system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', '--use-feature=in-tree-build',
                        '--no-warn-script-location', requirement),
                        exclude=(deprecation, '  Running command git clone -q'))
 
