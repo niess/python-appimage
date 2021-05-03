@@ -229,7 +229,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         # Bundle the requirements
         if requirements_list:
             pip_version = system(('./AppDir/AppRun','-m', 'pip','--version')).split(' ')[1]
-            in_tree_build = '' if pip_version <= '21' else '--use-feature=in-tree-build'
+            in_tree_build = '' if pip_version < '21' else '--use-feature=in-tree-build'
 
             deprecation = (
                 'DEPRECATION: Python 2.7 reached the end of its life',
