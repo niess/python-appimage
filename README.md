@@ -64,10 +64,11 @@ packages. Then, simply rebuild the AppImage using your favourite tool, e.g.
 * [grand/python](https://github.com/grand-mother/python) - Contained, portable
   and modern python for [GRAND][GRAND] running from an AppImage
 * [xxh](https://github.com/xxh/xxh) - Bring your favorite shell wherever you go
-  through the ssh 
-* [xonsh](https://github.com/xonsh/xonsh) - Python-powered, cross-platform, Unix-gazing 
+  through the ssh
+* [xonsh](https://github.com/xonsh/xonsh) - Python-powered, cross-platform, Unix-gazing
   shell language and command prompt
 * [rever](https://github.com/regro/rever) - Cross-platform software release tool.
+* [ssh-mitm](https://github.com/ssh-mitm/ssh-mitm) - ssh mitm server for security audits
 
 
 [APPIMAGE]: https://appimage.org
