@@ -14,14 +14,14 @@ Running Python from these [AppImages][APPIMAGE] is as simple as downloading a
 single file and changing its mode to executable, e.g.  as:
 
 ```sh
-wget https://github.com/niess/python-appimage/releases/download/\
-python3.9/python3.9.4-cp39-cp39-manylinux1_x86_64.AppImage
-chmod +x python3.9.4-cp39-cp39-manylinux1_x86_64.AppImage
+wget https://github.com/niess/python-appimage/releases/download\
+/python3.10/python3.10.0-cp310-cp310-manylinux2010_x86_64.AppImage
+chmod +x python3.10.0-cp310-cp310-manylinux2010_x86_64.AppImage
 
-./python3.9.4-cp39-cp39-manylinux1_x86_64.AppImage
+./python3.10.0-cp310-cp310-manylinux2010_x86_64.AppImage
 ```
 
-This should start a Python 3.8 interactive session on _almost_ any Linux
+This should start a Python 3.10 interactive session on _almost_ any Linux
 provided that `fuse` is available. Note that on WSL1 since `fuse` is not
 supported you will need to extract the AppImage as explained hereafter.
 
@@ -30,11 +30,11 @@ its standard library.  However, if you plan to install extra packages we
 recommend extracting the AppImage, e.g. as:
 
 ```sh
-./python3.9.4-cp39-cp39-manylinux1_x86_64.AppImage --appimage-extract
-mv squashfs-root python3.9
-rm -f python3.9.4-cp39-cp39-manylinux1_x86_64.AppImage
+./python3.10.0-cp310-cp310-manylinux2010_x86_64.AppImage --appimage-extract
+mv squashfs-root python3.10
+rm -f python3.10.0-cp310-cp310-manylinux2010_x86_64.AppImage
 
-export PATH="$(pwd)/python3.9/usr/bin:$PATH"
+export PATH="$(pwd)/python3.10/usr/bin:$PATH"
 ```
 
 Then, extra packages can be installed to the extracted AppDir using `pip`. For
