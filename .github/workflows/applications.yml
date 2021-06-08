@@ -39,9 +39,8 @@ jobs:
         test -e xonsh-x86_64.AppImage
         ./xonsh-x86_64.AppImage -c 'import xonsh'
 
-
     - name: Test ssh-mitm
       run: |
         python -m python_appimage build app applications/ssh-mitm
         test -e ssh-mitm-x86_64.AppImage
-        ./ssh-mitm-x86_64.AppImage -c 'import ssh_proxy_server'
+        ./ssh-mitm-x86_64.AppImage --help'
