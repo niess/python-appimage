@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['2.7', '3.5']
+        version: ['2.7', '3.5', '3.6']
 
     steps:
     - uses: actions/checkout@v2
@@ -38,3 +38,10 @@ jobs:
         python -m python_appimage build app applications/xonsh
         test -e xonsh-x86_64.AppImage
         ./xonsh-x86_64.AppImage -c 'import xonsh'
+
+    - name: Test ssh-mitm
+      if: ${{ matrix.version == '3.6' }}
+      run: |
+        python -m python_appimage build app applications/ssh-mitm
+        test -e ssh-mitm-x86_64.AppImage
+        ./ssh-mitm-x86_64.AppImage --help

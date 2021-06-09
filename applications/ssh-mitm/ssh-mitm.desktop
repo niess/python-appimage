@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ssh-mitm
+Exec=ssh-mitm
+Comment=SSH-MITM on Python {{ python-fullversion }}
+Icon=python
+Categories=System;
+Terminal=true
