@@ -25,13 +25,13 @@ def _unpack_args(args):
     '''Unpack command line arguments
     '''
     return args.appdir, args.name, args.python_version, args.linux_tag,        \
-           args.python_tag, args.base_image
+           args.python_tag, args.base_image, args.no_tree_build
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
-            python_tag=None, base_image=None):
+            python_tag=None, base_image=None, no_tree_build=False):
     '''Build a Python application using a base AppImage
     '''
 
@@ -229,7 +229,11 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         # Bundle the requirements
         if requirements_list:
             pip_version = system(('./AppDir/AppRun','-m', 'pip','--version')).split(' ')[1]
-            in_tree_build = '' if pip_version < '21' else '--use-feature=in-tree-build'
+
+            if pip_version < '21' or no_tree_build:
+                in_tree_build = ''
+            else:
+                in_tree_build = '--use-feature=in-tree-build'
 
             deprecation = (
                 'DEPRECATION: Python 2.7 reached the end of its life',

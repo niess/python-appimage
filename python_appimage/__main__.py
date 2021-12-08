@@ -70,6 +70,10 @@ def main():
         help='python compatibility tag (e.g. cp37-cp37m)')
     build_app_parser.add_argument('-p', '--python-version',
         help='python version (e.g. 3.8)')
+    build_app_parser.add_argument('--no-tree-build',
+                                  help='omits pip in-tree-build flag',
+                                  action='store_true',
+                                  default=False)
 
     which_parser = subparsers.add_parser('which',
         description='Locate a binary dependency')
