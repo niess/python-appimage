@@ -70,8 +70,8 @@ def main():
         help='python compatibility tag (e.g. cp37-cp37m)')
     build_app_parser.add_argument('-p', '--python-version',
         help='python version (e.g. 3.8)')
-    build_app_parser.add_argument('--no-tree-build',
-                                  help='omits pip in-tree-build flag',
+    build_app_parser.add_argument('--in-tree-build',
+                                  help='force pip in-tree-build',
                                   action='store_true',
                                   default=False)
 

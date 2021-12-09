@@ -25,13 +25,13 @@ def _unpack_args(args):
     '''Unpack command line arguments
     '''
     return args.appdir, args.name, args.python_version, args.linux_tag,        \
-           args.python_tag, args.base_image, args.no_tree_build
+           args.python_tag, args.base_image, args.in_tree_build
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
-            python_tag=None, base_image=None, no_tree_build=False):
+            python_tag=None, base_image=None, in_tree_build=False):
     '''Build a Python application using a base AppImage
     '''
 
@@ -230,14 +230,15 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
         if requirements_list:
             pip_version = system(('./AppDir/AppRun','-m', 'pip','--version')).split(' ')[1]
 
-            if pip_version < '21' or no_tree_build:
-                in_tree_build = ''
-            else:
+            if pip_version >= '21' and in_tree_build:
                 in_tree_build = '--use-feature=in-tree-build'
+            else:
+                in_tree_build = ''
 
             deprecation = (
                 'DEPRECATION: Python 2.7 reached the end of its life',
                 'DEPRECATION: Python 3.5 reached the end of its life',
+                'DEPRECATION: In-tree builds are now the default',
                 'WARNING: Running pip as root'
             )
 
@@ -251,7 +252,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                     log('BUNDLE', requirement)
                 system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', in_tree_build,
                        '--no-warn-script-location', requirement),
-                       exclude=(deprecation, '  Running command git clone -q'))
+                       exclude=(deprecation, '  Running command git clone'))
 
 
         # Bundle the entry point
