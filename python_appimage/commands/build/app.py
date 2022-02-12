@@ -239,7 +239,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 'DEPRECATION: Python 2.7 reached the end of its life',
                 'DEPRECATION: Python 3.5 reached the end of its life',
                 'DEPRECATION: In-tree builds are now the default',
-                'WARNING: Running pip as root'
+                'WARNING: Running pip as'
             )
 
             system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', in_tree_build,
