@@ -6,5 +6,5 @@ def decode(s):
     '''
     try:
         return s.decode()
-    except AttributeError:
+    except Exception:
         return str(s)
