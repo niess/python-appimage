@@ -25,26 +25,14 @@ with open('README.md') as f:
 def get_version():
     '''Get the next version number from PyPI
     '''
-    version = os.getenv('PYTHON_APPIMAGE_VERSION')
-    if not version:
-        try:
-            _create_unverified_https_context = ssl._create_unverified_context
-        except AttributeError:
-            pass
-        else:
-            ssl._create_default_https_context = _create_unverified_https_context
+    with open('VERSION') as f:
+        version = f.read().strip()
 
-        meta = json.load(
-                urlopen('https://pypi.org/pypi/python-appimage/json'))
-
-        version = meta['info']['version']
-        numbers = version.split('.')
-        numbers[-1] = str(int(numbers[-1]) + 1)
-        version = '.'.join(numbers)
-
-    p = subprocess.Popen('git describe --match=NeVeRmAtCh --always --dirty',
-                       shell=True, stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT)
+    p = subprocess.Popen(
+        'git describe --match=NeVeRmAtCh --always --dirty 2> /dev/null || '
+            'echo unknown',
+        shell=True, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
     stdout, _ = p.communicate()
     try:
         stdout = stdout.decode()
