@@ -1,9 +1,11 @@
 name: AppImage
 on:
   push:
+    branches:
+      - master
     paths:
-    - '.github/workflows/appimage.yml'
-    - 'python_appimage/**'
+      - '.github/workflows/appimage.yml'
+      - 'python_appimage/**'
   schedule:
     - cron: '0 3 * * 0'
 

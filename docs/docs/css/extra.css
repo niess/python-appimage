@@ -1,0 +1,97 @@
+/* Text justification */
+.justify {
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+
+/* Patch for code highlighting */
+code.inline {
+    background: transparent !important;
+    color: black;
+    display: inline;
+    overflow-wrap: break-word;
+}
+
+pre code.hljs {
+    background: #2e3440;
+    color: #d8dee9;
+}
+
+/* Wrap with a capsule */
+.capsule {
+    margin-bottom: 10px;
+    padding: 5px 20px 5px 20px;
+    border: thin solid;
+    -webkit-border-radius: 5px;
+            border-radius: 5px;
+}
+
+/* Appimages summary table */
+.appimages-summary-table {
+    border-collapse: collapse;
+    caption-side: bottom;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.appimages-summary-table caption {
+    font-size: 1.2em;
+    font-style: italic;
+    padding: 12px 15px;
+}
+
+.appimages-summary-table th,
+.appimages-summary-table td {
+    font-weight: normal;
+    padding: 12px 15px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.appimages-summary-table thead tr,
+.appimages-summary-table tbody td:first-child {
+    background-color: #2e3440;
+    color: #d8dee9;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.appimages-summary-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.appimages-summary-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.appimages-summary-table tbody tr:last-of-type {
+    border-bottom: 2px solid #2e3440;
+}
+
+.appimages-summary-table-inner,
+.appimages-summary-table-inner tbody,
+.appimages-summary-table-inner tbody tr,
+.appimages-summary-table-inner tbody tr:last-of-type {
+    border: none;
+}
+
+.appimages-summary-table-inner td
+{
+    padding: 3px 4px;
+}
+
+.appimages-summary-table-inner tbody tr:nth-of-type(even),
+.appimages-summary-table-inner tbody td:first-child {
+    background-color: transparent;
+    border: none !important;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Resized badge */
+.smaller-appimage-badge img {
+    height: 18px;
+    width: auto;
+}

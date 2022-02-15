@@ -1,8 +1,10 @@
 name: PyPI
 on:
   push:
+    branches:
+      - master
     paths:
-    - 'VERSION'
+      - 'VERSION'
 
 jobs:
   Test:

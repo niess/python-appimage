@@ -63,7 +63,12 @@ def patch_pip_install():
             shebang = shebang.split()
             python_x_y = os.path.basename(shebang.pop(0))
             if not python_x_y.startswith('python'):
-                continue
+                head, altbody = body.split(os.linesep, 1)
+                if head.startswith("'''exec' /"): # Patch for alt shebang
+                    body = altbody.split(os.linesep, 1)[1]
+                    python_x_y = os.path.basename(head.split()[1])
+                else:
+                    continue
 
             relpath = os.path.relpath(
                 sys.prefix + '/../../usr/bin/' + python_x_y,
