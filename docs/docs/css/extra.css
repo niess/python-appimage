@@ -1,13 +1,14 @@
 /* Text justification */
-.justify {
+.justify, p {
     text-align: justify;
     text-justify: inter-word;
 }
 
-
 /* Patch for code highlighting */
-code.inline {
-    background: transparent !important;
+.rst-content code,
+.rst-content .admonition code,
+.inline code {
+    background: transparent;
     color: black;
     display: inline;
     overflow-wrap: break-word;

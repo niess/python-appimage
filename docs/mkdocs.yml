@@ -3,8 +3,8 @@ site_description: AppImage distributions of Python
 site_author: Valentin Niess
 copyright: GPL-3.0
 
-repo_url: https://github.com/niess/python-appimage
-edit_uri: edit/master/docs/docs
+repo_url: https://github.com/niess/python-appimage/
+edit_uri: edit/master/docs/
 
 nav:
   - Python AppImages: index.md
@@ -15,9 +15,19 @@ theme:
   navigation_depth: 3
   highlightjs: no
 
+plugins:
+  - macros:
+      include_dir: docs/include
+  - search
+
 markdown_extensions:
   - admonition
-  - attr_list
   - md_in_html
 
 extra_css: [css/extra.css, css/nord.min.css]
+
+extra_javascript: [js/apps.js, js/highlight.min.js, js/index.js]
+
+extra:
+  github_api:
+    releases: https://api.github.com/repos/niess/python-appimage/releases

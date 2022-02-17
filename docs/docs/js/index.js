@@ -61,7 +61,7 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
         for (const release of releases) {
             elements.push(`<a href="${release.url}">${release.version}</a>`)
         }
-        $(".append-releases-list").append(
+        $("#append-releases-list").append(
             " Available Python versions are " +
             elements.slice(0, -1).join(", ") +
             " and " +
@@ -86,9 +86,14 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
     /* Strip blocks of whitespaces, e.g. at line start */
     function stripws (s) { return s.replace(/  +/g, ""); }
 
+    /* Utility function for setting an inline code */
+    function set_inline (selector, code) {
+        $(selector).children().html(stripws(code));
+    }
+
     /* Utility function for setting a code snippet */
     function set_snippet (selector, code) {
-        $(selector).children().html(stripws(code));
+        $(selector).children().children().html(stripws(code));
     }
 
     /* Generate the examples */
@@ -128,7 +133,7 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
             ln -s ${asset.name} python${release.version}
         `);
 
-        $("#basic-installation-example-execution").html(
+        set_inline("#basic-installation-example-execution",
             `./python${release.version}`
         );
 
@@ -140,8 +145,9 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
             ./python${release.version} -m pip install --target=$(pwd)/packages numpy
         `);
 
-        $("#user-isolation-example").html(
-            `./python${release.version} -s`);
+        set_inline("#user-isolation-example",
+            `./python${release.version} -s`
+        );
 
         set_snippet("#venv-example", `\
             ./python${release.version} -m venv /path/to/new/virtual/environment
@@ -234,27 +240,24 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
         html.push("<caption>Summary of available Python AppImages.</caption>");
         html.push("</table>");
 
-        $("#appimages-download-links").html(html.join("\n"));
+        const element = $("#appimages-download-links");
+        element.html(html.join("\n"));
     }
 
     /* Suggest an AppImage */
     if (host_arch != undefined) {
-        const body = $("#suggest-appimage-download");
-        body.html(stripws(`\
+        const main = $("#suggest-appimage-download").children().first();
+        main.attr("class", "admonition tip");
+        const children = main.children();
+        children.first().text("Tip");
+        children.eq(1).html(stripws(`\
             According to your browser, your system is an ${host_arch} Linux.
             Therefore, we recommend that you download an ${host_arch} AppImage
             with Manylinux ${suggested_appimage.linux} compatibility. For
             example, ${badge(suggested_appimage, false)}.
         `));
-
-        const parents = body.parent();
-        parents.attr("class", "admonition tip");
-        parents.children().first().text("Tip");
     }
 
     /* Perform the syntaxic highlighting */
-    hljs.configure({
-        cssSelector: "code"
-    });
     hljs.highlightAll();
 });
