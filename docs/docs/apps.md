@@ -62,7 +62,7 @@ returns the location of `appimagetool`, if it has been installed. If not, the
 {{ end(".capsule") }}
 
 
-## Manylinux Python AppImage
+## Manylinux Python AppImages
 
 AppImages of your local `python` are unlikely to be portable, except if you run
 an ancient Linux distribution. Indeed, a core component preventing portability
@@ -99,9 +99,78 @@ install found in the `manylinux2014_x86_64` Docker image.
 
 ## Simple packaging
 
-The recipe folder contains
-the app metadata, a Python requirements file and an entry point script. Examples
-of recipes can be found on GitHub in the [applications][APPLICATIONS] folder.
+The `python-appimage` utility can also be used in order to build simple
+applications, that can be `pip` installed. The syntax is
+
+```bash
+python-appimage build app -p 3.10 /path/to/recipe/folder
+```
+
+in order to build a Python 3.10 based application from a recipe folder.
+Examples of recipes can be found on GitHub in the [applications][APPLICATIONS]
+folder.  The recipe folder contains:
+
+- the AppImage metadata (`application.xml` and `application.desktop`),
+- an application icon (e.g. `application.png`),
+- a Python requirements file (`requirements.txt`)
+- an entry point script (`entrypoint.sh`).
+
+Additional information on metadata can be found in the AppImage documentation.
+That is, for [desktop][APPIMAGE_DESKTOP] and [AppStream XML][APPIMAGE_XML]
+files. The `requirements.txt` file allows to specify additional site packages
+to be bundled in the AppImage, using `pip`.
+
+!!! Caution
+    Site packages bundled in the AppImage, as well as their dependencies, must
+    either be pure python packages, or they must be available as portable binary
+    wheels.
+
+    If a **C extension** is bundled from **source**, then it will likely **not**
+    be **portable**, as further discussed in the [Advanced
+    packaging](#advanced-packaging) section.
+
+{{ begin(".capsule") }}
+### Entry point script
+
+{% raw %}
+The entry point script deserves some additional explanations. This script allows
+to customize the startup of your application. A typical `entrypoint.sh` script
+would look like
+
+```bash
+{{ python-executable }} ${APPDIR}/opt/python{{ python-version }}/bin/my_app.py "$@"
+```
+
+where `my_app.py` is the application startup script, installed by `pip`. As can
+be seen from the previous example, the `entrypoint.sh` script recognises some
+particular variables, nested between double curly braces, `{{ }}`. Those
+variables are listed in the table hereafter. In addition, usual [AppImage
+environement variables][APPIMAGE_ENV] can be used as well, if needed. For
+example, `$APPDIR` points to the AppImage mount point at runtime.
+{% endraw %}
+
+{{ begin("#entrypoint-variables") }}
+| variable             | Description                                                   |
+|----------------------|---------------------------------------------------------------|
+| `architecture`       | The AppImage architecture, e.g. `x86_64`.                     |
+| `linux-tag`          | The Manylinux compatibility tag, e.g. `manylinux2014_x86_64`. |
+| `python-executable`  | Path to the AppImage Python runtime.                          |
+| `python-fullversion` | The Python full version string, e.g. `3.10.2`.                |
+| `python-tag`         | The Python compatibility tag, e.g. `cp310-cp310`.             |
+| `python-version`     | The Python short version string, e.g. `3.10`.                 |
+{{ end("#entrypoint-variables") }}
+{{ end(".capsule") }}
+
+{% raw %}
+!!! Note
+    By default, Python AppImages are not isolated from the user space, nor from
+    Python specific environment variables, the like `PYTHONPATH`. Depending on
+    your use case, this can be problematic.
+
+    The runtime isolation level can be changed by adding the `-s` and `-E`
+    options, when invoking the runtime.  For example,
+    `{{ python-executable }} -sE` starts a fully isolated Python instance.
+{% endraw %}
 
 
 ## Advanced packaging

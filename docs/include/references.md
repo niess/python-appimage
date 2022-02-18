@@ -1,6 +1,10 @@
 {# References used in the documentation #}
 
 [APPIMAGE]: https://appimage.org/
+[APPIMAGE_APPRUN]: https://docs.appimage.org/introduction/software-overview.html#apprun
+[APPIMAGE_DESKTOP]: https://docs.appimage.org/reference/desktop-integration.html#
+[APPIMAGE_ENV]: https://docs.appimage.org/packaging-guide/environment-variables.html
+[APPIMAGE_XML]: https://docs.appimage.org/packaging-guide/optional/appstream.html
 [APPIMAGETOOL]: https://appimage.github.io/appimagetool/
 [APPLICATIONS]: {{ config.repo_url }}tree/master/applications/
 [GITHUB]: {{ config.repo_url }}

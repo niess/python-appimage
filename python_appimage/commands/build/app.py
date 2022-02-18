@@ -16,6 +16,7 @@ from ...utils.system import system
 from ...utils.template import copy_template, load_template
 from ...utils.tmp import TemporaryDirectory
 from ...utils.url import urlopen, urlretrieve
+from ...utils.version import tonumbers
 
 
 __all__ = ['execute']
@@ -29,6 +30,7 @@ def _unpack_args(args):
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
+_linux_pattern = re.compile('manylinux([0-9]+)_' + platform.machine())
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
             python_tag=None, base_image=None, in_tree_build=False):
@@ -52,7 +54,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 continue
             v = tag[6:]
             if python_version is None:
-                if v > version:
+                if tonumbers(v) > tonumbers(version):
                     release, version = entry, v
             elif v == python_version:
                 version = python_version
@@ -66,18 +68,27 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
 
 
         # Check for a suitable image
+        assets = release['assets']
+
         if linux_tag is None:
-            linux_tag = 'manylinux1_' + platform.machine()
+            plat = None
+            for asset in assets:
+                match = _linux_pattern.search(asset['name'])
+                if match:
+                    tmp = str(match.group(1))
+                    if (plat is None) or (tmp < plat):
+                        plat = tmp
+
+            linux_tag = 'manylinux' + plat + '_' + platform.machine()
 
         if python_tag is None:
             v = ''.join(version.split('.'))
             python_tag = 'cp{0:}-cp{0:}'.format(v)
-            if version < '3.8':
+            if tonumbers(version) < tonumbers('3.8'):
                 python_tag += 'm'
 
         target_tag = '-'.join((python_tag, linux_tag))
 
-        assets = release['assets']
         for asset in assets:
             match = _tag_pattern.search(asset['name'])
             if str(match.group(2)) == target_tag:
