@@ -46,11 +46,17 @@ def execute(tag, abi, contained=False):
             copy_tree(dirname, 'python_appimage')
 
             argv = ' '.join(sys.argv[1:])
-            script = (
-                'yum --disablerepo="*" --enablerepo=base install -q -y tk',
+            if tag.startswith("1_"):
+                # On manylinux1 tk is not installed
+                script = [
+                    'yum --disablerepo="*" --enablerepo=base install -q -y tk']
+            else:
+                # tk is already installed on other platforms
+                script = []
+            script += [
                 python + ' -m python_appimage ' + argv + ' --contained',
                 ''
-            )
+            ]
             docker_run(image, script)
 
             appimage_name = _get_appimage_name(abi, tag)
