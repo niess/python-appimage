@@ -125,9 +125,14 @@ to be bundled in the AppImage, using `pip`.
     either be pure python packages, or they must be available as portable binary
     wheels.
 
-    If a **C extension** is bundled from **source**, then it will likely **not**
-    be **portable**, as further discussed in the [Advanced
+    If a **C extension** is bundled from **source**, then it will likely **not
+    be portable**, as further discussed in the [Advanced
     packaging](#advanced-packaging) section.
+
+!!! Tip
+    Some site packages are available only for specific Manylinux tags. This can
+    be cross-checked by browsing the `Download files` section on the package's
+    PyPI page.
 
 {{ begin(".capsule") }}
 ### Entry point script
@@ -175,8 +180,37 @@ example, `$APPDIR` points to the AppImage mount point at runtime.
 
 ## Advanced packaging
 
-Alternatively, you can also manualy extract one of the Python
-[AppImages][APPIMAGE] as explained above and directly modify the content, e.g.
-`pip install` your custom packages. Then, simply rebuild the AppImage using your
-favourite tool, e.g.  [appimagetool][APPIMAGETOOL], [linuxdeploy][LINUXDEPLOY]
-or `python-appimage`.
+In more complex cases, e.g. if your application relies on external C libraries
+not bundled with the Python runtime, then the simple packaging scheme described
+previously will fail. Indeed, this falls out of the scope of `python-appimage`,
+whose main purpose it to relocate an existing Python install. In this case, you
+might rather refer to the initial AppImage [Packaging
+Guide][APPIMAGE_PACKAGING], and use alternative tools like
+[linuxdeploy][LINUXDEPLOY].
+
+Yet, `python-appimage` can still be of use in more complex cases by extracting
+its AppImages to an AppDir, as discussed in the [Advanced
+installation](index.md#advanced-installation) section. The extracted AppImages
+contain a relocatable Python runtime, that can be used as a starting base for
+building more complex AppImages.
+
+!!! Tip
+    In some cases, a simple workaround to missing external libraries can be to
+    fetch portable versions of those from a Manylinux distro, and to bundle them
+    under `AppDir/usr/lib`. You might also need to edit their dynamic section,
+    e.g.  using [`patchelf`][PATCHELF], which is installed by `python-appimage`.
+
+
+{{ begin(".capsule") }}
+### C extension modules
+
+If your application relies on C extension modules, they need to be compiled on a
+Manylinux distro in order to be portable. In addition, their dependencies need
+to be bundled as well. In this case, you might better start by building a binary
+wheel of your package, using tools like [Auditwheel][AUDITWHEEL] which can
+automate some parts of the packaging process. Note that `auditwheel` is already
+installed on the Manylinux Docker images.
+
+Once you have built a binary wheel of your package, it can be used with
+`python-appimage` in order to package your application as an AppImage.
+{{ end(".capsule") }}
