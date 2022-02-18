@@ -96,3 +96,36 @@ pre code.hljs {
     height: 18px;
     width: auto;
 }
+
+/* Reshape tables */
+.rst-content .section .docutils {
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    caption-side: bottom;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.rst-content table.docutils thead {
+    background-color: #2e3440;
+    color: #d8dee9;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.rst-content table.docutils tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td {
+    background-color: white;
+}
+
+.rst-content table.docutils tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.rst-content table.docutils tbody tr:last-of-type {
+    border-bottom: 2px solid #2e3440;
+}

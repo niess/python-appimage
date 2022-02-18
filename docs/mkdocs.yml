@@ -4,7 +4,9 @@ site_author: Valentin Niess
 copyright: GPL-3.0
 
 repo_url: https://github.com/niess/python-appimage/
-edit_uri: edit/master/docs/
+edit_uri: edit/master/docs/src
+
+docs_dir: src
 
 nav:
   - Python AppImages: index.md
@@ -18,6 +20,7 @@ theme:
 plugins:
   - macros:
       include_dir: docs/include
+      module_name: include/macros
   - search
 
 markdown_extensions:

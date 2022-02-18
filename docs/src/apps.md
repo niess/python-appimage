@@ -154,7 +154,6 @@ environement variables][APPIMAGE_ENV] can be used as well, if needed. For
 example, `$APPDIR` points to the AppImage mount point at runtime.
 {% endraw %}
 
-{{ begin("#entrypoint-variables") }}
 | variable             | Description                                                   |
 |----------------------|---------------------------------------------------------------|
 | `architecture`       | The AppImage architecture, e.g. `x86_64`.                     |
@@ -163,7 +162,6 @@ example, `$APPDIR` points to the AppImage mount point at runtime.
 | `python-fullversion` | The Python full version string, e.g. `3.10.2`.                |
 | `python-tag`         | The Python compatibility tag, e.g. `cp310-cp310`.             |
 | `python-version`     | The Python short version string, e.g. `3.10`.                 |
-{{ end("#entrypoint-variables") }}
 {{ end(".capsule") }}
 
 {% raw %}
