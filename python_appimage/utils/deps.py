@@ -37,7 +37,7 @@ def ensure_appimagetool():
 
     appimage = 'appimagetool-{0:}.AppImage'.format(_ARCH)
     baseurl = 'https://github.com/AppImage/AppImageKit/releases/'              \
-              'download/continuous'
+              'download/12'
     log('INSTALL', 'appimagetool from %s', baseurl)
 
     appdir_name = '.appimagetool.appdir'.format(_ARCH)
