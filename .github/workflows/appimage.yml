@@ -17,10 +17,12 @@ jobs:
         image: ['1', '2010', '2014']
         arch: [x86_64, i686]
         tag: [cp27-cp27m, cp27-cp27mu, cp35-cp35m, cp36-cp36m, cp37-cp37m,
-              cp38-cp38, cp39-cp39, cp310-cp310]
+              cp38-cp38, cp39-cp39, cp310-cp310, cp311-cp311]
         exclude:
           - image: '1'
             tag: cp310-cp310
+          - image: '1'
+            tag: cp311-cp311
           - image: '2010'
             tag: cp27-cp27m
           - image: '2010'
@@ -70,7 +72,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
-        version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10']
+        version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
 
     steps:
     - uses: actions/download-artifact@v1
