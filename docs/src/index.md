@@ -123,16 +123,19 @@ installs the numpy package besides the AppImage, in a `packages` folder.
     [shebang][SHEBANG], or be reinstalling the corresponding package.
 
 
-## Isolating from the user space
+## Isolating from the user environment
 
 Python AppImages are not isolated from the user space. Therefore, by default
 site packages located under `~/.local` are loaded instead of system ones.  Note
 that this is the usual Python runtime behaviour. However, it can be conflictual
 in some cases.
 
-In order to disable user site packages, one can use the `-s` option of the
-Python runtime. For example, invoking the Python AppImage as {{ "`./python3.10
--s`" | id("user-isolation-example") }} prevents user packages to be loaded.
+In order to disable user site packages, one can use the `-E`, `-s` or `-I`
+options of the Python runtime. For example, invoking the Python AppImage as
+{{ "`./python3.10 -s`" | id("user-isolation-example") }} prevents user packages
+to be loaded. The `-E` option disables Python related environment variables. In
+particular, it prevents packages under `PYTHONPATH` to be loaded. The `-I`
+option activates both `-E` and `-s`.
 
 
 ## Using a virtual environement
@@ -146,9 +149,15 @@ AppImages can create a `venv` using the standard syntax, e.g. as
 ```
 {{ end("#venv-example") }}
 
-However, the virtual environment fails setting up `pip`, despite the latter is
-packaged with the AppImage. Yet, this can be patched by calling `ensurepip` from
-within the `venv`, after its creation.  For example, as
+Note that moving the base Python AppImage to another location breaks the virtual
+environment. This can be patched by editing symbolic links under `venv/bin`, as
+well as the `home` variable in `venv/pyvenv.cfg`. The latter must point to the
+AppImage directory.
+
+!!! Tip
+    Old Python AppImages, created before version 1.1, fail setting up `pip`
+    automaticaly during `venv` creation. However, this can be patched by calling
+    `ensurepip` from within the `venv`, after its creation.  For example, as
 
 ```bash
 source /path/to/new/virtual/environment/bin/activate
@@ -189,9 +198,10 @@ freely moved around.
 
 !!! Tip
     As for Python AppImages, by default the extracted runtime is [not isolated
-    from the user space](#isolating-from-the-user-space). This behaviour can be
-    changed by editing the `AppDir/AppRun` wrapper script, and by adding the
-    `-s` option at the very bottom, where Python is invoked.
+    from the user environment](#isolating-from-the-user-environment). This
+    behaviour can be changed by editing the `AppDir/AppRun` wrapper script, and
+    by adding the `-s`, `-E` or `-I` option at the very bottom, where Python is
+    invoked.
 
 
 {{ begin(".capsule") }}
