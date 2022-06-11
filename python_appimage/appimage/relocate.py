@@ -106,9 +106,21 @@ def patch_binary(path, libdir, recursive=True):
                 patch_binary(target, libdir, recursive=True)
 
 
-def patch_site(path, patch):
-    '''Patch the site.py module for running Python from an AppImage
+def set_executable_patch(version, pkgpath, patch):
+    '''Set a runtime patch for sys.executable name
     '''
+
+    # This patch needs to be executed before site.main() is called. A natural
+    # option is to apply it directy to the site module. But, starting with
+    # Python 3.11, the site module is frozen within Python executable. Then,
+    # doing so would require to recompile Python. Thus, starting with 3.11 we
+    # instead apply the patch to the encodings package. Indeed, the latter is
+    # loaded before the site module, and it is not frozen (as for now).
+    major, minor = [int(v) for v in version.split('.')]
+    if (major >= 3) and (minor >= 11):
+        path = os.path.join(pkgpath, 'encodings', '__init__.py')
+    else:
+        path = os.path.join(pkgpath, 'site.py')
 
     with open(path) as f:
         source = f.read()
@@ -116,10 +128,14 @@ def patch_site(path, patch):
     if '_initappimage' in source: return
 
     lines = source.split(os.linesep)
-    for i, line in enumerate(lines):
-        if line.startswith('def main('): break
+
+    if path.endswith('site.py'):
+        # Insert the patch before the main function
+        for i, line in enumerate(lines):
+            if line.startswith('def main('): break
     else:
-        return
+        # Append the patch at end of file
+        i = len(lines)
 
     with open(patch) as f:
         patch = f.read()
@@ -284,14 +300,12 @@ def relocate_python(python=None, appdir=None):
             os.symlink('pip3', pip)
 
 
-    # Patch the site.py module
-    log('PATCH', '%s site.py', PYTHON_X_Y)
+    # Add a runtime patch for sys.executable, before site.main() execution
+    log('PATCH', '%s sys.executable', PYTHON_X_Y)
+    set_executable_patch(VERSION, PYTHON_PKG, PREFIX + '/data/_initappimage.py')
 
-    sitepath = PYTHON_PKG + '/site.py'
-    patch_site(sitepath, PREFIX + '/data/site-patch.py')
-
-    # Set a hook in Python for cleaning the path detection
-    log('HOOK', '%s site-packages', PYTHON_X_Y)
+    # Set a hook for cleaning sys.path, after site.main() execution
+    log('HOOK', '%s sys.path', PYTHON_X_Y)
 
     sitepkgs = PYTHON_PKG + '/site-packages'
     make_tree(sitepkgs)
