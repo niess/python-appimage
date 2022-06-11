@@ -125,17 +125,18 @@ installs the numpy package besides the AppImage, in a `packages` folder.
 
 ## Isolating from the user environment
 
-Python AppImages are not isolated from the user space. Therefore, by default
-site packages located under `~/.local` are loaded instead of system ones.  Note
-that this is the usual Python runtime behaviour. However, it can be conflictual
-in some cases.
+By default, Python AppImages are not isolated from the user environment. For
+example, packages located under `~/.local/lib/pythonX.Y/site-packages` are
+loaded prior to AppImage's (system) ones.  Note that this is the usual Python
+runtime behaviour. However, it can be conflictual for some applications.
 
-In order to disable user site packages, one can use the `-E`, `-s` or `-I`
-options of the Python runtime. For example, invoking the Python AppImage as
-{{ "`./python3.10 -s`" | id("user-isolation-example") }} prevents user packages
-to be loaded. The `-E` option disables Python related environment variables. In
-particular, it prevents packages under `PYTHONPATH` to be loaded. The `-I`
-option activates both `-E` and `-s`.
+In order to isolate your application from the user environment, the Python
+runtime provides the `-E`, `-s` and `-I` options. For example, invoking a Python
+AppImage as {{ "`./python3.10 -s`" | id("user-isolation-example") }} prevents
+the loading of user site packages (located under `~/.local`). Additionaly, the
+`-E` option disables Python related environment variables. In particular, it
+prevents packages under `PYTHONPATH` to be loaded. The `-I` option triggers both
+`-E` and `-s`.
 
 
 ## Using a virtual environement
