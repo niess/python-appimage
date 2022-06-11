@@ -106,6 +106,32 @@ def patch_binary(path, libdir, recursive=True):
                 patch_binary(target, libdir, recursive=True)
 
 
+def patch_site(path, patch):
+    '''Patch the site.py module for running Python from an AppImage
+    '''
+
+    with open(path) as f:
+        source = f.read()
+
+    if '_initappimage' in source: return
+
+    lines = source.split(os.linesep)
+    for i, line in enumerate(lines):
+        if line.startswith('def main('): break
+    else:
+        return
+
+    with open(patch) as f:
+        patch = f.read()
+
+    lines.insert(i, patch)
+    lines.insert(i + 1, '')
+
+    source = os.linesep.join(lines)
+    with open(path, 'w') as f:
+        f.write(source)
+
+
 def relocate_python(python=None, appdir=None):
     '''Bundle a Python install inside an AppDir
     '''
@@ -258,8 +284,14 @@ def relocate_python(python=None, appdir=None):
             os.symlink('pip3', pip)
 
 
+    # Patch the site.py module
+    log('PATCH', '%s site.py', PYTHON_X_Y)
+
+    sitepath = PYTHON_PKG + '/site.py'
+    patch_site(sitepath, PREFIX + '/data/site-patch.py')
+
     # Set a hook in Python for cleaning the path detection
-    log('HOOK', '%s site packages', PYTHON_X_Y)
+    log('HOOK', '%s site-packages', PYTHON_X_Y)
 
     sitepkgs = PYTHON_PKG + '/site-packages'
     make_tree(sitepkgs)

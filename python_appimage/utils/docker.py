@@ -46,4 +46,6 @@ def docker_run(image, extra_cmds):
     p = subprocess.Popen(cmd, shell=True)
     p.communicate()
     if p.returncode != 0:
+        if p.returncode == 139:
+            sys.stderr.write("segmentation fault when running Docker (139)\n")
         sys.exit(p.returncode)

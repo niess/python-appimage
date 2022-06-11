@@ -1,32 +1,8 @@
-'''Hooks for isloating the AppImage Python and making it relocatable
+'''Python AppImage hooks
 '''
 import atexit
 import os
 import sys
-
-
-def clean_path():
-    '''Remove system locations from the packages search path
-    '''
-    site_packages = '/usr/local/lib/python{:}.{:}/site-packages'.format(
-        *sys.version_info[:2])
-    binaries_path = '/usr/local/bin'
-    env_path = os.getenv("PYTHONPATH")
-    if env_path is None:
-        env_path = []
-    else:
-        env_path = [os.path.realpath(path) for path in env_path.split(':')]
-
-    if ((os.path.dirname(sys.executable) != binaries_path) and
-        (site_packages not in env_path)):
-        # Remove the builtin site-packages from the path
-        try:
-            sys.path.remove(site_packages)
-        except ValueError:
-            pass
-
-
-clean_path()
 
 
 _bin_at_start = os.listdir(sys.prefix + '/bin')
@@ -108,4 +84,8 @@ def patch_pip_install():
             os.remove(path)
 
 
-atexit.register(patch_pip_install)
+if os.getenv('VIRTUAL_ENV') is None:
+    atexit.register(patch_pip_install)
+else:
+    del _bin_at_start
+    del patch_pip_install
