@@ -195,14 +195,16 @@ freely moved around.
     Executable scripts are installed under `AppDir/opt/pythonX.Y/bin` where _X_
     and _Y_ in _pythonX.Y_ stand for the major and minor version numbers. Site
     packages are located under
-    `AppDir/opt/pythonX.Y/lib/pythonX.Y/site-packages`.
+    `AppDir/opt/pythonX.Y/lib/pythonX.Y/site-packages`. For convenience, `pip`
+    installed applications are also mirrored under `AppDir/usr/bin`, using
+    symbolic links.
 
 !!! Tip
     As for Python AppImages, by default the extracted runtime is [not isolated
     from the user environment](#isolating-from-the-user-environment). This
-    behaviour can be changed by editing the `AppDir/AppRun` wrapper script, and
-    by adding the `-s`, `-E` or `-I` option at the very bottom, where Python is
-    invoked.
+    behaviour can be changed by editing the `AppDir/usr/bin/pythonX.Y` wrapper
+    script, and by adding the `-s`, `-E` or `-I` option at the very bottom,
+    where Python is invoked.
 
 
 {{ begin(".capsule") }}

@@ -170,9 +170,9 @@ example, `$APPDIR` points to the AppImage mount point at runtime.
     Python specific environment variables, the like `PYTHONPATH`. Depending on
     your use case, this can be problematic.
 
-    The runtime isolation level can be changed by adding the `-s` and `-E`
+    The runtime isolation level can be changed by adding the `-E`, `-s` or `-I`
     options, when invoking the runtime.  For example,
-    `{{ python-executable }} -sE` starts a fully isolated Python instance.
+    `{{ python-executable }} -I` starts a fully isolated Python instance.
 {% endraw %}
 
 
@@ -186,8 +186,8 @@ might rather refer to the initial AppImage [Packaging
 Guide][APPIMAGE_PACKAGING], and use alternative tools like
 [linuxdeploy][LINUXDEPLOY].
 
-Yet, `python-appimage` can still be of use in more complex cases by extracting
-its AppImages to an AppDir, as discussed in the [Advanced
+However, `python-appimage` can still be of use in more complex cases by
+extracting its AppImages to an AppDir, as discussed in the [Advanced
 installation](index.md#advanced-installation) section. The extracted AppImages
 contain a relocatable Python runtime, that can be used as a starting base for
 building more complex AppImages.

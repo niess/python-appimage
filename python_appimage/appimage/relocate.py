@@ -208,13 +208,10 @@ def relocate_python(python=None, appdir=None):
     target = PYTHON_BIN + '/' + PYTHON_X_Y
     copy_file(source, target, update=True)
 
-    relpath = os.path.relpath(target, APPDIR_BIN)
-    make_tree(APPDIR_BIN)
-    os.symlink(relpath, APPDIR_BIN + '/' + PYTHON_X_Y)
-
     copy_tree(HOST_PKG, PYTHON_PKG)
     copy_tree(HOST_INC, PYTHON_INC)
 
+    make_tree(APPDIR_BIN)
     pip_source = HOST_BIN + '/' + PIP_X_Y
     if not os.path.exists(pip_source):
         pip_source = HOST_BIN + '/' + PIP_X
@@ -228,7 +225,8 @@ def relocate_python(python=None, appdir=None):
             f.write('#! /bin/sh\n')
             f.write(' '.join((
                 '"exec"',
-                '"$(dirname $(readlink -f ${0}))/' + PYTHON_X_Y + '"',
+                '"$(dirname $(readlink -f ${0}))/../../../usr/bin/' +
+                    PYTHON_X_Y + '"',
                 '"$0"',
                 '"$@"\n'
             )))
@@ -361,18 +359,25 @@ def relocate_python(python=None, appdir=None):
         log('INSTALL', basename)
 
 
-    # Bundle the entry point
-    apprun = APPDIR + '/AppRun'
-    if not os.path.exists(apprun):
-        log('INSTALL', 'AppRun')
+    # Bundle the python wrapper
+    wrapper = APPDIR_BIN + '/' + PYTHON_X_Y
+    if not os.path.exists(wrapper):
+        log('INSTALL', '%s wrapper', PYTHON_X_Y)
         entrypoint_path = PREFIX + '/data/entrypoint.sh'
         entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
         dictionary = {'entrypoint': entrypoint,
                       'shebang': '#! /bin/bash',
                       'tcltk-env': tcltk_env_string(PYTHON_PKG),
                       'cert-file': cert_file_env_string(cert_file)}
-        _copy_template('apprun.sh', apprun, **dictionary)
+        _copy_template('python-wrapper.sh', wrapper, **dictionary)
 
+    # Bundle the entry point
+    apprun = APPDIR + '/AppRun'
+    if not os.path.exists(apprun):
+        log('INSTALL', 'AppRun')
+
+        relpath = os.path.relpath(wrapper, APPDIR)
+        os.symlink(relpath, APPDIR + '/AppRun')
 
     # Bundle the desktop file
     desktop_name = 'python{:}.desktop'.format(FULLVERSION)

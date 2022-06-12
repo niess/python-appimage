@@ -7,7 +7,7 @@ import shutil
 import stat
 import struct
 
-from ...appimage import build_appimage, cert_file_env_string, tcltk_env_string
+from ...appimage import build_appimage
 from ...utils.compat import decode
 from ...utils.deps import PREFIX
 from ...utils.fs import copy_file, make_tree, remove_file, remove_tree
@@ -280,13 +280,10 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
             entrypoint = load_template(entrypoint_path, **dictionary)
             python_pkg = 'AppDir/opt/python{0:}/lib/python{0:}'.format(
                 python_version)
-            cert_file = '/opt/_internal/certs.pem'
-            if not os.path.exists('AppDir' + cert_file):
-                cert_file = None
             dictionary = {'entrypoint': entrypoint,
-                          'shebang': shebang,
-                          'tcltk-env': tcltk_env_string(python_pkg),
-                          'cert-file': cert_file_env_string(cert_file)}
+                          'shebang': shebang}
+            if os.path.exists('AppDir/AppRun'):
+                os.remove('AppDir/AppRun')
             copy_template(PREFIX + '/data/apprun.sh', 'AppDir/AppRun',
                           **dictionary)
 

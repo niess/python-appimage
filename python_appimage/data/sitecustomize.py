@@ -16,6 +16,11 @@ def patch_pip_install():
     if not 'pip' in sys.modules:
         return
 
+    appdir = os.getenv('APPDIR')
+    python_x_y = 'python{:}.{:}'.format(*sys.version_info[:2])
+    if sys.prefix != '{:}/opt/{:}'.format(appdir, python_x_y):
+        return
+
     args = sys.argv[1:]
     if 'install' in args:
         for exe in os.listdir(sys.prefix + '/bin'):
@@ -36,13 +41,15 @@ def patch_pip_install():
                 continue
 
             shebang, body = content.split(os.linesep, 1)
-            shebang = shebang.split()
-            python_x_y = os.path.basename(shebang.pop(0))
-            if not python_x_y.startswith('python'):
+            shebang = shebang.strip().split()
+            executable = shebang.pop(0)
+            if executable != sys.executable:
                 head, altbody = body.split(os.linesep, 1)
                 if head.startswith("'''exec' /"): # Patch for alt shebang
                     body = altbody.split(os.linesep, 1)[1]
-                    python_x_y = os.path.basename(head.split()[1])
+                    executable = head.split()[1]
+                    if executable != sys.executable:
+                        continue
                 else:
                     continue
 
