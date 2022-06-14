@@ -247,57 +247,6 @@ def relocate_python(python=None, appdir=None):
     for path in matches:
         remove_tree(path)
 
-
-    # Set or update symlinks to python
-    pythons = glob.glob(APPDIR_BIN + '/python?.*')
-    versions = [os.path.basename(python)[6:] for python in pythons]
-    latest2, latest3 = '0.0', '0.0'
-    for version in versions:
-        if version.startswith('2') and version >= latest2:
-            latest2 = version
-        elif version.startswith('3') and version >= latest3:
-            latest3 = version
-    if latest2 == VERSION:
-        python2 = APPDIR_BIN + '/python2'
-        remove_file(python2)
-        os.symlink(PYTHON_X_Y, python2)
-        has_pip = os.path.exists(APPDIR_BIN + '/' + PIP_X_Y)
-        if has_pip:
-            pip2 = APPDIR_BIN + '/pip2'
-            remove_file(pip2)
-            os.symlink(PIP_X_Y, pip2)
-        if latest3 == '0.0':
-            log('SYMLINK', 'python, python2 to ' + PYTHON_X_Y)
-            python = APPDIR_BIN + '/python'
-            remove_file(python)
-            os.symlink('python2', python)
-            if has_pip:
-                log('SYMLINK', 'pip, pip2 to ' + PIP_X_Y)
-                pip = APPDIR_BIN + '/pip'
-                remove_file(pip)
-                os.symlink('pip2', pip)
-        else:
-            log('SYMLINK', 'python2 to ' + PYTHON_X_Y)
-            if has_pip:
-                log('SYMLINK', 'pip2 to ' + PIP_X_Y)
-    elif latest3 == VERSION:
-        log('SYMLINK', 'python, python3 to ' + PYTHON_X_Y)
-        python3 = APPDIR_BIN + '/python3'
-        remove_file(python3)
-        os.symlink(PYTHON_X_Y, python3)
-        python = APPDIR_BIN + '/python'
-        remove_file(python)
-        os.symlink('python3', python)
-        if os.path.exists(APPDIR_BIN + '/' + PIP_X_Y):
-            log('SYMLINK', 'pip, pip3 to ' + PIP_X_Y)
-            pip3 = APPDIR_BIN + '/pip3'
-            remove_file(pip3)
-            os.symlink(PIP_X_Y, pip3)
-            pip = APPDIR_BIN + '/pip'
-            remove_file(pip)
-            os.symlink('pip3', pip)
-
-
     # Add a runtime patch for sys.executable, before site.main() execution
     log('PATCH', '%s sys.executable', PYTHON_X_Y)
     set_executable_patch(VERSION, PYTHON_PKG, PREFIX + '/data/_initappimage.py')
@@ -370,6 +319,55 @@ def relocate_python(python=None, appdir=None):
                       'tcltk-env': tcltk_env_string(PYTHON_PKG),
                       'cert-file': cert_file_env_string(cert_file)}
         _copy_template('python-wrapper.sh', wrapper, **dictionary)
+
+    # Set or update symlinks to python
+    pythons = glob.glob(APPDIR_BIN + '/python?.*')
+    versions = [os.path.basename(python)[6:] for python in pythons]
+    latest2, latest3 = '0.0', '0.0'
+    for version in versions:
+        if version.startswith('2') and version >= latest2:
+            latest2 = version
+        elif version.startswith('3') and version >= latest3:
+            latest3 = version
+    if latest2 == VERSION:
+        python2 = APPDIR_BIN + '/python2'
+        remove_file(python2)
+        os.symlink(PYTHON_X_Y, python2)
+        has_pip = os.path.exists(APPDIR_BIN + '/' + PIP_X_Y)
+        if has_pip:
+            pip2 = APPDIR_BIN + '/pip2'
+            remove_file(pip2)
+            os.symlink(PIP_X_Y, pip2)
+        if latest3 == '0.0':
+            log('SYMLINK', 'python, python2 to ' + PYTHON_X_Y)
+            python = APPDIR_BIN + '/python'
+            remove_file(python)
+            os.symlink('python2', python)
+            if has_pip:
+                log('SYMLINK', 'pip, pip2 to ' + PIP_X_Y)
+                pip = APPDIR_BIN + '/pip'
+                remove_file(pip)
+                os.symlink('pip2', pip)
+        else:
+            log('SYMLINK', 'python2 to ' + PYTHON_X_Y)
+            if has_pip:
+                log('SYMLINK', 'pip2 to ' + PIP_X_Y)
+    elif latest3 == VERSION:
+        log('SYMLINK', 'python, python3 to ' + PYTHON_X_Y)
+        python3 = APPDIR_BIN + '/python3'
+        remove_file(python3)
+        os.symlink(PYTHON_X_Y, python3)
+        python = APPDIR_BIN + '/python'
+        remove_file(python)
+        os.symlink('python3', python)
+        if os.path.exists(APPDIR_BIN + '/' + PIP_X_Y):
+            log('SYMLINK', 'pip, pip3 to ' + PIP_X_Y)
+            pip3 = APPDIR_BIN + '/pip3'
+            remove_file(pip3)
+            os.symlink(PIP_X_Y, pip3)
+            pip = APPDIR_BIN + '/pip'
+            remove_file(pip)
+            os.symlink('pip3', pip)
 
     # Bundle the entry point
     apprun = APPDIR + '/AppRun'
