@@ -39,7 +39,13 @@ def system(args, exclude=None):
             stripped = [line for line in stripped
                         if not line.startswith(pattern)]
         if stripped:
-            raise RuntimeError(err)
+            # Tolerate single line warning(s)
+            for line in stripped:
+                if (len(line) < 8) or (line[:8].lower() != "warning:"):
+                    raise RuntimeError(err)
+            else:
+                for line in stripped:
+                    log('WARNING', line[8:].strip())
 
     return str(decode(out).strip())
 
