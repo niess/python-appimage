@@ -29,6 +29,8 @@ jobs:
             tag: cp27-cp27mu
           - image: '2010'
             tag: cp35-cp35m
+          - image: '2010'
+            tag: cp311-cp311
           - image: '2014'
             tag: cp27-cp27m
           - image: '2014'
