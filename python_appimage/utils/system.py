@@ -3,7 +3,7 @@ import re
 import subprocess
 
 from .compat import decode
-from .log import debug
+from .log import debug, log
 
 
 __all__ = ['ldd', 'system']
