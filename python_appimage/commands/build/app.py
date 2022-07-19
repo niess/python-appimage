@@ -6,11 +6,12 @@ import re
 import shutil
 import stat
 import struct
+import importlib
 
 from ...appimage import build_appimage
 from ...utils.compat import decode
 from ...utils.deps import PREFIX
-from ...utils.fs import copy_file, make_tree, remove_file, remove_tree
+from ...utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
 from ...utils.log import log
 from ...utils.system import system
 from ...utils.template import copy_template, load_template
@@ -259,6 +260,18 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 if requirement.startswith('git+'):
                     url, name = os.path.split(requirement)
                     log('BUNDLE', name + ' from ' + url[4:])
+                elif requirement.startswith('local+'):
+                    _, name = requirement.split('+')
+                    module = importlib.util.find_spec(name).origin
+                    if module.endswith('.so'):
+                        destination = f'AppDir/opt/python{python_version}/lib/python{python_version}/site-packages/'
+                        copy_file(module, destination)
+                    else:
+                        destination = f'AppDir/opt/python{python_version}/lib/python{python_version}/site-packages/{name}/'
+                        source = os.path.dirname(module)
+                        copy_tree(source, destination)
+                    log('BUNDLE', f'{name} (local)')
+                    continue
                 else:
                     log('BUNDLE', requirement)
                 system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', in_tree_build,
