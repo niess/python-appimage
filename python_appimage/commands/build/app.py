@@ -264,17 +264,18 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                     _, name = requirement.split('+')
                     module = importlib.util.find_spec(name).origin
                     if module.endswith('.so'):
+                        log('BUNDLE', f'{name} (local)')
                         destination = f'AppDir/opt/python{python_version}/lib/python{python_version}/site-packages/'
                         copy_file(module, destination)
                     else:
+                        log('BUNDLE', f'{name} (local)')
                         destination = f'AppDir/opt/python{python_version}/lib/python{python_version}/site-packages/{name}/'
                         source = os.path.dirname(module)
                         copy_tree(source, destination)
-                    log('BUNDLE', f'{name} (local)')
                     continue
                 else:
                     log('BUNDLE', requirement)
-                system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', in_tree_build,
+                system(('./AppDir/AppRun', '-I', '-m', 'pip', 'install', '-U', in_tree_build,
                        '--no-warn-script-location', requirement),
                        exclude=(deprecation, '  Running command git clone'))
 
