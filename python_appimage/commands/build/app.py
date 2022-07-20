@@ -6,10 +6,9 @@ import re
 import shutil
 import stat
 import struct
-import importlib
 
 from ...appimage import build_appimage
-from ...utils.compat import decode
+from ...utils.compat import decode, find_spec, isolation_flag
 from ...utils.deps import PREFIX
 from ...utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
 from ...utils.log import log
@@ -254,28 +253,30 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 'WARNING: Running pip as'
             )
 
-            system(('./AppDir/AppRun', '-m', 'pip', 'install', '-U', in_tree_build,
+            system(('./AppDir/AppRun', isolation_flag, '-m', 'pip', 'install', '-U', in_tree_build,
                    '--no-warn-script-location', 'pip'), exclude=deprecation)
             for requirement in requirements_list:
                 if requirement.startswith('git+'):
                     url, name = os.path.split(requirement)
                     log('BUNDLE', name + ' from ' + url[4:])
                 elif requirement.startswith('local+'):
-                    _, name = requirement.split('+')
-                    module = importlib.util.find_spec(name).origin
-                    if module.endswith('.so'):
-                        log('BUNDLE', f'{name} (local)')
-                        destination = f'AppDir/opt/python{python_version}/lib/python{python_version}/site-packages/'
-                        copy_file(module, destination)
+                    name = requirement[6:]
+                    source = find_spec(name).origin
+                    if source.endswith('/__init__.py'):
+                        source = os.path.dirname(source)
+                    elif source.endswith('/'):
+                        source = source[:-1]
+                    log('BUNDLE', name + ' from ' + source)
+                    if os.path.isfile(source):
+                        destination = 'AppDir/opt/python{0:}/lib/python{0:}/site-packages/'.format(python_version)
+                        copy_file(source, destination)
                     else:
-                        log('BUNDLE', f'{name} (local)')
-                        destination = f'AppDir/opt/python{python_version}/lib/python{python_version}/site-packages/{name}/'
-                        source = os.path.dirname(module)
+                        destination = 'AppDir/opt/python{0:}/lib/python{0:}/site-packages/{1:}'.format(python_version, name)
                         copy_tree(source, destination)
                     continue
                 else:
                     log('BUNDLE', requirement)
-                system(('./AppDir/AppRun', '-I', '-m', 'pip', 'install', '-U', in_tree_build,
+                system(('./AppDir/AppRun', isolation_flag, '-m', 'pip', 'install', '-U', in_tree_build,
                        '--no-warn-script-location', requirement),
                        exclude=(deprecation, '  Running command git clone'))
 
