@@ -1,7 +1,7 @@
 import sys
 
 
-__all__ = ['decode', 'find_spec', 'isolation_flag']
+__all__ = ['decode', 'find_spec']
 
 
 def decode(s):
@@ -22,10 +22,6 @@ if sys.version_info[0] == 2:
     def find_spec(name):
         return ModuleSpec(name, imp.find_module(name)[1])
 
-    isolation_flag = '-sE'
-
 else:
     import importlib
     find_spec = importlib.util.find_spec
-
-    isolation_flag = '-I'

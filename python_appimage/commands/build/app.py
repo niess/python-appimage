@@ -8,7 +8,7 @@ import stat
 import struct
 
 from ...appimage import build_appimage
-from ...utils.compat import decode, find_spec, isolation_flag
+from ...utils.compat import decode, find_spec
 from ...utils.deps import PREFIX
 from ...utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
 from ...utils.log import log
@@ -253,6 +253,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 'WARNING: Running pip as'
             )
 
+            isolation_flag = '-sE' if python_version[0] == '2' else '-I'
             system(('./AppDir/AppRun', isolation_flag, '-m', 'pip', 'install', '-U', in_tree_build,
                    '--no-warn-script-location', 'pip'), exclude=deprecation)
             for requirement in requirements_list:
