@@ -121,9 +121,9 @@ files. The `requirements.txt` file allows to specify additional site packages
 to be bundled in the AppImage, using `pip`.
 
 !!! Caution
-    Site packages bundled in the AppImage, as well as their dependencies, must
-    either be pure python packages, or they must be available as portable binary
-    wheels.
+    For the application to be portable, site packages bundled in the AppImage,
+    as well as their dependencies, must must be available as binary wheels, or
+    be pure Python packages.
 
     If a **C extension** is bundled from **source**, then it will likely **not
     be portable**, as further discussed in the [Advanced
@@ -133,6 +133,13 @@ to be bundled in the AppImage, using `pip`.
     Some site packages are available only for specific Manylinux tags. This can
     be cross-checked by browsing the `Download files` section on the package's
     PyPI page.
+
+!!! Tip
+    Since version 1.2, `python-appimage` allows to specify local requirements as
+    well, using the `local+` tag (see
+    [PR49](https://github.com/niess/python-appimage/pull/49)). Note however that
+    this performs a direct copy of the local package, which has several
+    limitations.
 
 {{ begin(".capsule") }}
 ### Entry point script
