@@ -24,4 +24,8 @@ if sys.version_info[0] == 2:
 
 else:
     import importlib
-    find_spec = importlib.util.find_spec
+    try:
+        find_spec = importlib.util.find_spec
+    except AttributeError:
+        import importlib.util
+        find_spec = importlib.util.find_spec
