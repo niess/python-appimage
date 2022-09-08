@@ -1,7 +1,7 @@
 import sys
 
 
-__all__ = ['decode', 'find_spec']
+__all__ = ['decode', 'encode', 'find_spec']
 
 
 def decode(s):
@@ -9,6 +9,15 @@ def decode(s):
     '''
     try:
         return s.decode()
+    except Exception:
+        return str(s)
+
+
+def encode(s):
+    '''Encode Python 3 str as bytes
+    '''
+    try:
+        return s.encode()
     except Exception:
         return str(s)
 

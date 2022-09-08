@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-from .compat import decode
+from .compat import decode, encode
 from .log import debug, log
 
 
@@ -15,7 +15,7 @@ except NameError:
     basestring = (str, bytes)
 
 
-def system(args, exclude=None):
+def system(args, exclude=None, stdin=None):
     '''System call with capturing output
     '''
     cmd = ' '.join(args)
@@ -29,9 +29,15 @@ def system(args, exclude=None):
         exclude = list(exclude)
     exclude.append('fuse: warning:')
 
+    if stdin:
+        in_arg = subprocess.PIPE
+        stdin = encode(stdin)
+    else:
+        in_arg = None
+
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-    out, err = p.communicate()
+                         stderr=subprocess.PIPE, stdin=in_arg)
+    out, err = p.communicate(input=stdin)
     if err:
         err = decode(err)
         stripped = [line for line in err.split(os.linesep) if line]

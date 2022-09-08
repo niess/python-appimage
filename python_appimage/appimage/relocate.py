@@ -34,6 +34,15 @@ def _get_tk_version(python_pkg):
             raise RuntimeError('could not guess Tcl/Tk version')
 
 
+def _get_tk_libdir(version):
+    try:
+        library = system(('tclsh' + version,), stdin='puts [info library]')
+    except SystemError:
+        raise RuntimeError('could not locate Tcl/Tk' + version + ' library')
+
+    return os.path.dirname(library)
+
+
 def tcltk_env_string(python_pkg):
     '''Environment for using AppImage's TCl/Tk
     '''
@@ -280,22 +289,13 @@ def relocate_python(python=None, appdir=None):
         tcltkdir = APPDIR_SHARE + '/tcltk'
         if (not os.path.exists(tcltkdir + '/tcl' + tk_version)) or             \
            (not os.path.exists(tcltkdir + '/tk' + tk_version)):
-            hostdir = '/usr/share/tcltk'
-            if os.path.exists(hostdir):
-                make_tree(APPDIR_SHARE)
-                copy_tree(hostdir, tcltkdir)
-            else:
-                make_tree(tcltkdir)
-                tclpath = '/usr/share/tcl' + tk_version
-                if not tclpath:
-                    raise ValueError('could not find ' + tclpath)
-                copy_tree(tclpath, tcltkdir + '/tcl' + tk_version)
-
-                tkpath = '/usr/share/tk' + tk_version
-                if not tkpath:
-                    raise ValueError('could not find ' + tkpath)
-                copy_tree(tkpath, tcltkdir + '/tk' + tk_version)
-
+            libdir = _get_tk_libdir(tk_version)
+            log('INSTALL', 'Tcl/Tk' + tk_version)
+            make_tree(tcltkdir)
+            tclpath = libdir + '/tcl' + tk_version
+            copy_tree(tclpath, tcltkdir + '/tcl' + tk_version)
+            tkpath = libdir + '/tk' + tk_version
+            copy_tree(tkpath, tcltkdir + '/tk' + tk_version)
 
     # Copy any SSL certificate
     cert_file = os.getenv('SSL_CERT_FILE')
