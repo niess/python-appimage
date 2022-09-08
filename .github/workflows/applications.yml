@@ -32,7 +32,8 @@ jobs:
     - name: Test tasmotizer
       run: |
         python -m python_appimage build app applications/tasmotizer            \
-                                            --linux-tag=manylinux2014_x86_64
+                                            --linux-tag=manylinux1_x86_64      \
+                                            --python-version=3.9
         test -e tasmotizer-x86_64.AppImage
 
     - name: Test xonsh
