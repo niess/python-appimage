@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: ['1', '2010', '2014']
+        image: ['1', '2010', '2014', '2_24', '2_28']
         arch: [x86_64, i686]
         tag: [cp27-cp27m, cp27-cp27mu, cp35-cp35m, cp36-cp36m, cp37-cp37m,
               cp38-cp38, cp39-cp39, cp310-cp310, cp311-cp311]
@@ -37,6 +37,20 @@ jobs:
             tag: cp27-cp27mu
           - image: '2014'
             tag: cp35-cp35m
+          - image: '2_24'
+            tag: cp27-cp27m
+          - image: '2_24'
+            tag: cp27-cp27mu
+          - image: '2_24'
+            tag: cp35-cp35m
+          - image: '2_28'
+            tag: cp27-cp27m
+          - image: '2_28'
+            tag: cp27-cp27mu
+          - image: '2_28'
+            tag: cp35-cp35m
+          - image: '2_28'
+            arch: i686
 
     steps:
     - uses: actions/checkout@v2

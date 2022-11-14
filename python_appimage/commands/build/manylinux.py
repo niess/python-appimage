@@ -19,6 +19,15 @@ def _unpack_args(args):
     return args.tag, args.abi, args.contained
 
 
+def _manylinux_tag(tag):
+    '''Format Manylinux tag
+    '''
+    if tag.startswith('2_'):
+        return 'manylinux_' + tag
+    else:
+        return 'manylinux' + tag
+
+
 def _get_appimage_name(abi, tag):
     '''Format the Python AppImage name using the ABI and OS tags
     '''
@@ -27,8 +36,8 @@ def _get_appimage_name(abi, tag):
     fullversion = desktop[13:-8]
 
     # Finish building the AppImage on the host. See below.
-    return 'python{:}-{:}-manylinux{:}.AppImage'.format(
-        fullversion, abi, tag)
+    return 'python{:}-{:}-{:}.AppImage'.format(
+        fullversion, abi, _manylinux_tag(tag))
 
 
 def execute(tag, abi, contained=False):
@@ -37,7 +46,7 @@ def execute(tag, abi, contained=False):
 
     if not contained:
         # Forward the build to a Docker image
-        image = 'quay.io/pypa/manylinux' + tag
+        image = 'quay.io/pypa/' + _manylinux_tag(tag)
         python = '/opt/python/' + abi + '/bin/python'
 
         pwd = os.getcwd()
