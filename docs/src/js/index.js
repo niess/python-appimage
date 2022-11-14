@@ -11,11 +11,23 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
                 /* Parse AppImage metadata */
                 const tmp0 = asset.name.split("manylinux")
                 const tag = tmp0[1].slice(0,-9);
-                const tmp1 = tag.split(/_(.+)/);
-                const linux = tmp1[0]
-                const arch = tmp1[1]
-                const tmp2 = tmp0[0].split("-")
-                const python = tmp2[1] + "-" + tmp2[2]
+                const tmp1 = tag.split(/_(.+)/, 2);
+                var linux = undefined;
+                var arch = undefined;
+                if (tmp1[0] == "") {
+                    const tmp3 = tmp1[1].split("_");
+                    linux = tmp3[0] + "_" + tmp3[1];
+                    if (tmp3.length == 3) {
+                        arch = tmp3[2];
+                    } else {
+                        arch = tmp3[2] + "_" + tmp3[3];
+                    }
+                } else {
+                    linux = tmp1[0];
+                    arch = tmp1[1];
+                }
+                const tmp2 = tmp0[0].split("-", 3);
+                const python = tmp2[1] + "-" + tmp2[2];
                 assets.push({
                     name: asset.name,
                     url: asset.browser_download_url,
@@ -25,8 +37,8 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
                 });
 
                 if (full_version === undefined) {
-                    const index = asset.name.indexOf("-")
-                    full_version = asset.name.slice(6, index)
+                    const index = asset.name.indexOf("-");
+                    full_version = asset.name.slice(6, index);
                 }
             }
         }
@@ -161,6 +173,17 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
             mv squashfs-root ${appdir}
 
             ln -s ${appdir}/AppRun python${release.version}
+        `);
+
+        set_snippet("#repackaging-example", `\
+            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/\\
+            appimagetool-x86_64.AppImage
+
+            chmod +x appimagetool-x86_64.AppImage
+
+            ./appimagetool-x86_64.AppImage \\
+                ${appdir} \\
+                ${asset.name}
         `);
     }
 
