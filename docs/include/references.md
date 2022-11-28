@@ -13,7 +13,7 @@
 [LINUXDEPLOY]: https://github.com/linuxdeploy/linuxdeploy/
 [MANYLINUX]: https://github.com/pypa/manylinux/
 [PATCHELF]: https://github.com/NixOS/patchelf/
-[PYPI]: https://pypi.org/project/python-appimaAge/
+[PYPI]: https://pypi.org/project/python-appimage/
 [RELEASES]: {{ config.repo_url }}releases/
 [SHEBANG]: https://en.wikipedia.org/wiki/Shebang_(Unix)/
 [VENV]: https://docs.python.org/3/library/venv.html/
