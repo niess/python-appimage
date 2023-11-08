@@ -4,11 +4,12 @@ import stat
 import subprocess
 import sys
 
+from .compat import decode
 from .log import log
 from .system import system
 
 
-def docker_run(image, extra_cmds):
+def docker_run(image, extra_cmds, capture=False):
     '''Execute commands within a docker container
     '''
 
@@ -42,10 +43,16 @@ def docker_run(image, extra_cmds):
                     'type=bind,source={:},target=/pwd'.format(os.getcwd()),
                     image, '/bin/bash', bash_arg))
 
+    if capture:
+        opts = {'stderr': subprocess.PIPE, 'stdout': subprocess.PIPE}
+    else:
+        opts = {}
     log('RUN', image)
-    p = subprocess.Popen(cmd, shell=True)
-    p.communicate()
+    p = subprocess.Popen(cmd, shell=True, **opts)
+    r = p.communicate()
     if p.returncode != 0:
         if p.returncode == 139:
             sys.stderr.write("segmentation fault when running Docker (139)\n")
         sys.exit(p.returncode)
+    if capture:
+        return decode(r[0])

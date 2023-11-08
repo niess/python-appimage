@@ -75,6 +75,11 @@ def main():
                                   action='store_true',
                                   default=False)
 
+    list_parser = subparsers.add_parser('list',
+        description='List Python versions installed in a manylinux image')
+    list_parser.add_argument('tag',
+        help='manylinux image tag (e.g. 2010_x86_64)')
+
     which_parser = subparsers.add_parser('which',
         description='Locate a binary dependency')
     which_parser.add_argument('binary', choices=binaries,
