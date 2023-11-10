@@ -1,105 +1,36 @@
 name: AppImage
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - '.github/workflows/appimage.yml'
-      - 'python_appimage/**'
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: 'Dry run'
+        required: true
+        type: boolean
+      all:
+        description: 'Update all'
+        required: true
+        type: boolean
   schedule:
     - cron: '0 3 * * 0'
 
 jobs:
-  Build:
+  Update:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        image: ['1', '2010', '2014', '2_24', '2_28']
-        arch: [x86_64, i686]
-        tag: [cp27-cp27m, cp27-cp27mu, cp35-cp35m, cp36-cp36m, cp37-cp37m,
-              cp38-cp38, cp39-cp39, cp310-cp310, cp311-cp311]
-        exclude:
-          - image: '1'
-            tag: cp310-cp310
-          - image: '1'
-            tag: cp311-cp311
-          - image: '2010'
-            tag: cp27-cp27m
-          - image: '2010'
-            tag: cp27-cp27mu
-          - image: '2010'
-            tag: cp35-cp35m
-          - image: '2010'
-            tag: cp311-cp311
-          - image: '2014'
-            tag: cp27-cp27m
-          - image: '2014'
-            tag: cp27-cp27mu
-          - image: '2014'
-            tag: cp35-cp35m
-          - image: '2_24'
-            tag: cp27-cp27m
-          - image: '2_24'
-            tag: cp27-cp27mu
-          - image: '2_24'
-            tag: cp35-cp35m
-          - image: '2_28'
-            tag: cp27-cp27m
-          - image: '2_28'
-            tag: cp27-cp27mu
-          - image: '2_28'
-            tag: cp35-cp35m
-          - image: '2_28'
-            arch: i686
+    permissions:
+      contents: write
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: Build
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+    - name: Install Dependencies
+      run: pip install PyGithub
+
+    - name: Run updater
       run: |
-        # Build the AppImage
-        python -m python_appimage build manylinux \
-          ${{ matrix.image }}_${{ matrix.arch }} \
-          ${{ matrix.tag }}
-
-        # Export the AppImage name and the Python version
-        appimage=$(ls python*.AppImage)
-        SCRIPT=$(cat <<-END
-        version = '${appimage}'[6:].split('.', 2)
-        print('{:}.{:}'.format(*version[:2]))
-        END
-        )
-        version=$(python -c "${SCRIPT}")
-
-        echo "::set-env name=PYTHON_APPIMAGE::${appimage}"
-        echo "::set-env name=PYTHON_VERSION::${version}"
-
-    - uses: actions/upload-artifact@v1
-      if: github.ref == 'refs/heads/master'
-      with:
-        name: python${{ env.PYTHON_VERSION }}-appimages
-        path: ${{ env.PYTHON_APPIMAGE }}
-
-  Release:
-    needs: Build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    strategy:
-      matrix:
-        version: ['2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
-
-    steps:
-    - uses: actions/download-artifact@v1
-      with:
-        name: python${{ matrix.version }}-appimages
-
-    - name: Release
-      uses: marvinpinto/action-automatic-releases@latest
-      with:
-        automatic_release_tag: python${{ matrix.version }}
-        title: Python ${{ matrix.version }}
-        files: |
-          python${{ matrix.version }}-appimages/python*.AppImage
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        ./scripts/update-appimages.py \
+          --token=${{ secrets.GITHUB_TOKEN }} \
+          --sha=${{ github.sha }} \
+          ${{ inputs.all && '--all' || '' }} \
+          ${{ inputs.dry && '--dry' || '' }}
+      env:
+        PYTHONPATH: ${{ github.workspace }}

@@ -4,6 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 import os
 import subprocess
+import sys
 from typing import Optional
 
 from github import Auth, Github
@@ -88,7 +89,8 @@ def update(args):
     '''
 
     # Connect to GitHub
-    if args.token is None:
+    token = args.token
+    if token is None:
         # First, check for token in env
         token = os.getenv('GITHUB_TOKEN')
         if token is None:
@@ -160,15 +162,17 @@ def update(args):
                         new_releases.add(rtag)
 
     # Check SHA of tags.
-    sha = os.getenv('GITHUB_SHA')
+    sha = args.sha
     if sha is None:
-        p = subprocess.run(
-            'git rev-parse HEAD',
-            shell = True,
-            capture_output = True,
-            check = True
-        )
-        sha = p.stdout.decode().strip()
+        sha = os.getenv('GITHUB_SHA')
+        if sha is None:
+            p = subprocess.run(
+                'git rev-parse HEAD',
+                shell = True,
+                capture_output = True,
+                check = True
+            )
+            sha = p.stdout.decode().strip()
 
     for tag in releases.keys():
         ref = repo.get_git_ref(f'tags/{tag}')
@@ -256,9 +260,13 @@ if __name__ == '__main__':
         action = 'store_true',
         default = False
     )
+    parser.add_argument("-s", "--sha",
+        help = "reference commit SHA"
+    )
     parser.add_argument('-t', '--token',
         help = 'GitHub authentication token'
     )
 
     args = parser.parse_args()
+    sys.argv = sys.argv[:1] # Empty args for fake call
     update(args)

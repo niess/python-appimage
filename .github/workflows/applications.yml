@@ -1,12 +1,23 @@
 name: Applications
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - '.github/workflows/applications.yml'
-      - 'applications/**'
-      - 'python_appimage/**'
+  workflow_dispatch:
+    inputs:
+      scipy:
+        required: true
+        default: true
+        type: boolean
+      tasmotizer:
+        required: true
+        default: true
+        type: boolean
+      xonsh:
+        required: true
+        default: true
+        type: boolean
+      ssh-mitm:
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   Test:
@@ -16,12 +27,13 @@ jobs:
         version: ['2.7', '3.7', '3.9']
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.version }}
 
     - name: Test scipy
+      if: ${{ inputs.scipy }}
       run: |
         python -m python_appimage build app applications/scipy                 \
                                             --python-version=2.7               \
@@ -30,6 +42,7 @@ jobs:
         ./scipy-x86_64.AppImage -c 'import numpy, pandas, scipy'
 
     - name: Test tasmotizer
+      if: ${{ inputs.tasmotizer }}
       run: |
         python -m python_appimage build app applications/tasmotizer            \
                                             --linux-tag=manylinux1_x86_64      \
@@ -37,13 +50,14 @@ jobs:
         test -e tasmotizer-x86_64.AppImage
 
     - name: Test xonsh
+      if: ${{ inputs.xonsh }}
       run: |
         python -m python_appimage build app applications/xonsh
         test -e xonsh-x86_64.AppImage
         ./xonsh-x86_64.AppImage -c 'import xonsh'
 
     - name: Test ssh-mitm
-      if: ${{ matrix.version == '3.9' }}
+      if: ${{ inputs.ssh_mitm && (matrix.version == '3.9') }}
       run: |
         python -m python_appimage build app applications/ssh-mitm
         test -e ssh-mitm-x86_64.AppImage
