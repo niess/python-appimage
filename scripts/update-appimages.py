@@ -89,14 +89,17 @@ def update(args):
 
     # Connect to GitHub
     if args.token is None:
-        # Get token from gh app (e.g. for local runs)
-        p = subprocess.run(
-            'gh auth token',
-            shell = True,
-            capture_output = True,
-            check = True
-        )
-        token = p.stdout.decode().strip()
+        # First, check for token in env
+        token = os.getenv('GITHUB_TOKEN')
+        if token is None:
+            # Else try to get a token from gh app
+            p = subprocess.run(
+                'gh auth token',
+                shell = True,
+                capture_output = True,
+                check = True
+            )
+            token = p.stdout.decode().strip()
 
     auth = Auth.Token(token)
     session = Github(auth=auth)
@@ -142,7 +145,7 @@ def update(args):
                 except KeyError:
                     meta = None
 
-                if meta is None or meta.version != version:
+                if (meta is None) or (meta.version != version) or args.all:
                     new_meta = AssetMeta(
                         tag = tag,
                         abi = abi,
@@ -157,13 +160,15 @@ def update(args):
                         new_releases.add(rtag)
 
     # Check SHA of tags.
-    p = subprocess.run(
-        'git rev-parse HEAD',
-        shell = True,
-        capture_output = True,
-        check = True
-    )
-    sha = p.stdout.decode().strip()
+    sha = os.getenv('GITHUB_SHA')
+    if sha is None:
+        p = subprocess.run(
+            'git rev-parse HEAD',
+            shell = True,
+            capture_output = True,
+            check = True
+        )
+        sha = p.stdout.decode().strip()
 
     for tag in releases.keys():
         ref = repo.get_git_ref(f'tags/{tag}')
@@ -175,20 +180,20 @@ def update(args):
                 )
                 new_sha.append(meta)
 
-    # Log foreseen changes.
-    for tag in new_releases:
-        meta = ReleaseMeta(tag)
-        log('FORESEEN', f'create new release for {meta.title()}')
-
-    for meta in new_assets:
-        log('FORESEEN', f'create asset {meta.appimage_name()}')
-        if meta.asset:
-            log('FORESEEN', f'remove asset {meta.asset.name}')
-
-    for meta in new_sha:
-        log('FORESEEN', f'update git SHA for refs/tags/{meta.tag}')
-
     if args.dry:
+        # Log foreseen changes and exit
+        for tag in new_releases:
+            meta = ReleaseMeta(tag)
+            log('DRY', f'new release for {meta.title()}')
+
+        for meta in new_assets:
+            log('DRY', f'create asset {meta.appimage_name()}')
+            if meta.asset:
+                log('DRY', f'remove asset {meta.asset.name}')
+
+        for meta in new_sha:
+            log('DRY', f'refs/tags/{meta.tag} -> {sha}')
+
         return
 
     if new_assets:
@@ -213,6 +218,7 @@ def update(args):
             prerelease = True
         )
         releases[tag] = meta
+        log('UPDATE', f'new release for {title}')
 
     # Update assets.
     for meta in new_assets:
@@ -233,11 +239,17 @@ def update(args):
             sha = sha,
             force = True
         )
+        log('UPDATE', f'refs/tags/{meta.tag} -> {sha}')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description = 'Update GitHub releases of Python AppImages'
+    )
+    parser.add_argument('-a', '--all',
+        help = 'force update of all available releases',
+        action = 'store_true',
+        default = False
     )
     parser.add_argument('-d', '--dry',
         help = 'dry run (only log changes)',
@@ -247,8 +259,6 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--token',
         help = 'GitHub authentication token'
     )
-
-    # XXX Add --all arg
 
     args = parser.parse_args()
     update(args)
