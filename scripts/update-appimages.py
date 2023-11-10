@@ -39,6 +39,15 @@ class ReleaseMeta:
 
 
 @dataclass
+class TagMeta:
+    '''Metadata relative to a git tag
+    '''
+
+    tag: str
+    ref: "github.GitRef"
+
+
+@dataclass
 class AssetMeta:
     '''Metadata relative to a release Asset
     '''
@@ -94,7 +103,7 @@ def update(args):
     repo = session.get_repo('niess/python-appimage')
 
     # Fetch currently released AppImages
-    log('FETCH', 'Currently released AppImages')
+    log('FETCH', 'currently released AppImages')
     releases = {}
     assets = defaultdict(dict)
     n_assets = 0
@@ -113,11 +122,12 @@ def update(args):
                     assets[meta.tag][meta.abi] = meta
 
     n_releases = len(releases)
-    log('FETCH', f'Found {n_assets} AppImages in {n_releases} releases')
+    log('FETCH', f'found {n_assets} AppImages in {n_releases} releases')
 
     # Look for updates.
     new_releases = set()
     new_assets = []
+    new_sha = []
 
     for manylinux in MANYLINUSES:
         for arch in ARCHS:
@@ -146,22 +156,53 @@ def update(args):
                     if rtag not in releases:
                         new_releases.add(rtag)
 
-    if not new_assets:
+    # Check SHA of tags.
+    p = subprocess.run(
+        'git rev-parse HEAD',
+        shell = True,
+        capture_output = True,
+        check = True
+    )
+    sha = p.stdout.decode().strip()
+
+    for tag in releases.keys():
+        ref = repo.get_git_ref(f'tags/{tag}')
+        if ref.ref is not None:
+            if ref.object.sha != sha:
+                meta = TagMeta(
+                    tag = tag,
+                    ref = ref
+                )
+                new_sha.append(meta)
+
+    # Log foreseen changes.
+    for tag in new_releases:
+        meta = ReleaseMeta(tag)
+        log('FORESEEN', f'create new release for {meta.title()}')
+
+    for meta in new_assets:
+        log('FORESEEN', f'create asset {meta.appimage_name()}')
+        if meta.asset:
+            log('FORESEEN', f'remove asset {meta.asset.name}')
+
+    for meta in new_sha:
+        log('FORESEEN', f'update git SHA for refs/tags/{meta.tag}')
+
+    if args.dry:
         return
 
-    # Build new AppImage(s)
-    cwd = os.getcwd()
-    os.makedirs(APPIMAGES_DIR, exist_ok=True)
-    try:
-        os.chdir(APPIMAGES_DIR)
-        for meta in new_assets:
-            build_manylinux(meta.tag, meta.abi)
-    finally:
-        os.chdir(cwd)
+    if new_assets:
+        # Build new AppImage(s)
+        cwd = os.getcwd()
+        os.makedirs(APPIMAGES_DIR, exist_ok=True)
+        try:
+            os.chdir(APPIMAGES_DIR)
+            for meta in new_assets:
+                build_manylinux(meta.tag, meta.abi)
+        finally:
+            os.chdir(cwd)
 
     # Create any new release(s).
-    repo = session.get_repo('niess/test-releases') # XXX
-
     for tag in new_releases:
         meta = ReleaseMeta(tag)
         title = meta.title()
@@ -179,24 +220,35 @@ def update(args):
         appimage = meta.appimage_name()
         new_asset = release.upload_asset(
             path = f'{APPIMAGES_DIR}/{appimage}',
-            label = appimage
+            name = appimage
         )
         if meta.asset:
             meta.asset.delete_asset()
         meta.asset = new_asset
         assets[meta.tag][meta.abi] = meta
 
+    # Update git tags SHA.
+    for meta in new_sha:
+        meta.ref.edit(
+            sha = sha,
+            force = True
+        )
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description = "Update GitHub releases of Python AppImages"
+        description = 'Update GitHub releases of Python AppImages'
     )
-    parser.add_argument("-t", "--token",
-        help = "GitHub authentication token"
+    parser.add_argument('-d', '--dry',
+        help = 'dry run (only log changes)',
+        action = 'store_true',
+        default = False
     )
-    parser.add_argument("-s", "--sha",
-        help = "Current commit SHA"
+    parser.add_argument('-t', '--token',
+        help = 'GitHub authentication token'
     )
+
+    # XXX Add --all arg
 
     args = parser.parse_args()
     update(args)
