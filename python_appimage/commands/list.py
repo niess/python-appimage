@@ -35,7 +35,9 @@ def execute(tag):
             script,
             capture = True
         )
-        for line in result.split(os.linesep):
-            if line:
-                log('LIST', "{1:7} ->  /opt/python/{0:}".format(
-                    *line.split()))
+        pythons = [line.split() for line in result.split(os.linesep) if line]
+
+        for (abi, version) in pythons:
+            log('LIST', "{:7} ->  /opt/python/{:}".format(version, abi))
+
+        return pythons
