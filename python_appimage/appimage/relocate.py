@@ -98,7 +98,7 @@ def patch_binary(path, libdir, recursive=True):
     rpath = '\'' + system((PATCHELF, '--print-rpath', path)) + '\''
     relpath = os.path.relpath(libdir, os.path.dirname(path))
     relpath = '' if relpath == '.' else '/' + relpath
-    expected = '\'$ORIGIN' + relpath + '\''
+    expected = '\'$ORIGIN' + relpath + ':$ORIGIN/../lib\''
     if rpath != expected:
         system((PATCHELF, '--set-rpath', expected, path))
 
