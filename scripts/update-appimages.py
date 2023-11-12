@@ -31,21 +31,17 @@ class ReleaseMeta:
 
     tag: str
 
+    ref: Optional["github.GitRef"] = None
     release: Optional["github.GitRelease"] = None
+
+    def message(self):
+        '''Returns release message'''
+        return f'Appimage distributions of {self.title()} (see `Assets` below)'
 
     def title(self):
         '''Returns release title'''
         version = self.tag[6:]
         return f'Python {version}'
-
-
-@dataclass
-class TagMeta:
-    '''Metadata relative to a git tag
-    '''
-
-    tag: str
-    ref: "github.GitRef"
 
 
 @dataclass
@@ -88,6 +84,18 @@ def update(args):
     '''Update Python AppImage GitHub releases
     '''
 
+    sha = args.sha
+    if sha is None:
+        sha = os.getenv('GITHUB_SHA')
+        if sha is None:
+            p = subprocess.run(
+                'git rev-parse HEAD',
+                shell = True,
+                capture_output = True,
+                check = True
+            )
+            sha = p.stdout.decode().strip()
+
     # Connect to GitHub
     token = args.token
     if token is None:
@@ -114,10 +122,15 @@ def update(args):
     n_assets = 0
     for release in repo.get_releases():
         if release.tag_name.startswith('python'):
-            releases[release.tag_name] = ReleaseMeta(
+            meta = ReleaseMeta(
                 tag = release.tag_name,
                 release = release
             )
+            ref = repo.get_git_ref(f'tags/{meta.tag}')
+            if (ref.ref is not None) and (ref.object.sha != sha):
+                meta.ref = ref
+            releases[release.tag_name] = meta
+
             for asset in release.get_assets():
                 if asset.name.endswith('.AppImage'):
                     n_assets += 1
@@ -132,7 +145,6 @@ def update(args):
     # Look for updates.
     new_releases = set()
     new_assets = []
-    new_sha = []
 
     for manylinux in MANYLINUSES:
         for arch in ARCHS:
@@ -161,29 +173,6 @@ def update(args):
                     if rtag not in releases:
                         new_releases.add(rtag)
 
-    # Check SHA of tags.
-    sha = args.sha
-    if sha is None:
-        sha = os.getenv('GITHUB_SHA')
-        if sha is None:
-            p = subprocess.run(
-                'git rev-parse HEAD',
-                shell = True,
-                capture_output = True,
-                check = True
-            )
-            sha = p.stdout.decode().strip()
-
-    for tag in releases.keys():
-        ref = repo.get_git_ref(f'tags/{tag}')
-        if ref.ref is not None:
-            if ref.object.sha != sha:
-                meta = TagMeta(
-                    tag = tag,
-                    ref = ref
-                )
-                new_sha.append(meta)
-
     if args.dry:
         # Log foreseen changes and exit
         for tag in new_releases:
@@ -192,11 +181,14 @@ def update(args):
 
         for meta in new_assets:
             log('DRY', f'create asset {meta.appimage_name()}')
-            if meta.asset:
+            if meta.asset is not None:
                 log('DRY', f'remove asset {meta.asset.name}')
 
-        for meta in new_sha:
-            log('DRY', f'refs/tags/{meta.tag} -> {sha}')
+        for meta in releases.values():
+            if meta.ref is not None:
+                log('DRY', f'refs/tags/{meta.tag} -> {sha}')
+                if meta.release is not None:
+                    log('DRY', f'reformat release for {meta.title()}')
 
         return
 
@@ -218,7 +210,7 @@ def update(args):
         meta.release = repo.create_git_release(
             tag = meta.tag,
             name = title,
-            message = f'Appimage distributions of {title} (see `Assets` below)',
+            message = meta.message(),
             prerelease = True
         )
         releases[tag] = meta
@@ -238,12 +230,23 @@ def update(args):
         assets[meta.tag][meta.abi] = meta
 
     # Update git tags SHA.
-    for meta in new_sha:
-        meta.ref.edit(
-            sha = sha,
-            force = True
-        )
-        log('UPDATE', f'refs/tags/{meta.tag} -> {sha}')
+    for meta in releases.values():
+        if meta.ref is not None:
+            meta.ref.edit(
+                sha = sha,
+                force = True
+            )
+            log('UPDATE', f'refs/tags/{meta.tag} -> {sha}')
+
+            if meta.release is not None:
+                title = meta.title()
+                meta.release.update_release(
+                    name = title,
+                    message = meta.message(),
+                    prerelease = True,
+                    tag_name = meta.tag
+                )
+                log('UPDATE', f'reformat release for {title}')
 
 
 if __name__ == '__main__':
