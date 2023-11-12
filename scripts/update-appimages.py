@@ -12,7 +12,7 @@ from github import Auth, Github
 from python_appimage.commands.build.manylinux import execute as build_manylinux
 from python_appimage.commands.list import execute as list_pythons
 from python_appimage.utils.log import log
-from python_appimage.utils.manylinux import format_appimage_name
+from python_appimage.utils.manylinux import format_appimage_name, format_tag
 
 
 # Build matrix
@@ -73,6 +73,15 @@ class AssetMeta:
     def appimage_name(self):
         '''Returns Python AppImage name'''
         return format_appimage_name(self.abi, self.version, self.tag)
+
+    def formated_tag(self):
+        '''Returns formated manylinux tag'''
+        return format_tag(self.tag)
+
+    def previous_version(self):
+        '''Returns previous version'''
+        if self.asset:
+            return self.asset.name[6:-9].split('-', 1)[0]
 
     def release_tag(self):
         '''Returns release git tag'''
@@ -190,6 +199,9 @@ def update(args):
                 if meta.release is not None:
                     log('DRY', f'reformat release for {meta.title()}')
 
+        if new_assets:
+            log('DRY', f'new update summary with {len(new_assets)} entries')
+
         return
 
     if new_assets:
@@ -217,6 +229,7 @@ def update(args):
         log('UPDATE', f'new release for {title}')
 
     # Update assets.
+    update_summary = []
     for meta in new_assets:
         release = releases[meta.release_tag()].release
         appimage = meta.appimage_name()
@@ -226,10 +239,19 @@ def update(args):
         )
         if meta.asset:
             meta.asset.delete_asset()
+            update_summary.append(
+                f'- update {meta.formated_tag()}/{meta.abi} '
+                    f'{meta.previous_version()} -> {meta.version}'
+            )
+        else:
+            update_summary.append(
+                f'- add {meta.formated_tag()}/{meta.abi} {meta.version}'
+            )
+
         meta.asset = new_asset
         assets[meta.tag][meta.abi] = meta
 
-    # Update git tags SHA.
+    # Update git tags SHA
     for meta in releases.values():
         if meta.ref is not None:
             meta.ref.edit(
@@ -247,6 +269,21 @@ def update(args):
                     tag_name = meta.tag
                 )
                 log('UPDATE', f'reformat release for {title}')
+
+    # Generate update summary
+    if update_summary:
+        for release in repo.get_releases():
+            if release.tag_name == 'update-summary':
+                release.delete_release()
+                break
+
+        message = os.linesep.join(update_summary)
+        repo.create_git_release(
+            tag = 'update-summary',
+            name = 'Update summary',
+            message = message,
+            prerelease = True
+        )
 
 
 if __name__ == '__main__':
