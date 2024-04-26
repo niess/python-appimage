@@ -257,7 +257,11 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
             system(('./AppDir/AppRun', isolation_flag, '-m', 'pip', 'install', '-U', in_tree_build,
                    '--no-warn-script-location', 'pip'), exclude=deprecation)
             for requirement in requirements_list:
-                if requirement.startswith('git+'):
+                requirement = requirement.strip()
+
+                if requirement.startswith('#'):
+                    continue
+                elif requirement.startswith('git+'):
                     url, name = os.path.split(requirement)
                     log('BUNDLE', name + ' from ' + url[4:])
                 elif requirement.startswith('local+'):

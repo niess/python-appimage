@@ -141,6 +141,10 @@ to be bundled in the AppImage, using `pip`.
     this performs a direct copy of the local package, which has several
     limitations.
 
+!!! Tip
+    All lines in `requirements.txt` file starting with `#` are treated as
+    comments.
+
 {{ begin(".capsule") }}
 ### Entry point script
 
