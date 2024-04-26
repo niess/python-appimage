@@ -41,9 +41,16 @@ def system(args, exclude=None, stdin=None):
     if err:
         err = decode(err)
         stripped = [line for line in err.split(os.linesep) if line]
+
+        def matches_pattern(line, pattern):
+            if isinstance(pattern, re.Pattern):
+                return bool(pattern.match(line))
+            return line.startswith(pattern)
+
         for pattern in exclude:
             stripped = [line for line in stripped
-                        if not line.startswith(pattern)]
+                        if not matches_pattern(line, pattern)]
+
         if stripped:
             # Tolerate single line warning(s)
             for line in stripped:
