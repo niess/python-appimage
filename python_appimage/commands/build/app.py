@@ -253,6 +253,12 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 'WARNING: Running pip as'
             )
 
+            git_warnings = (
+                re.compile(r'\s+Running command git (clone|checkout) '),
+                re.compile(r"\s+Branch '.*' set up to track remote"),
+                re.compile(r"\s+Switched to a new branch '.*'"),
+            )
+
             isolation_flag = '-sE' if python_version[0] == '2' else '-I'
             system(('./AppDir/AppRun', isolation_flag, '-m', 'pip', 'install', '-U', in_tree_build,
                    '--no-warn-script-location', 'pip'), exclude=deprecation)
@@ -279,7 +285,7 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                     log('BUNDLE', requirement)
                 system(('./AppDir/AppRun', isolation_flag, '-m', 'pip', 'install', '-U', in_tree_build,
                        '--no-warn-script-location', requirement),
-                       exclude=(deprecation, '  Running command git clone'))
+                       exclude=(deprecation + git_warnings))
 
 
         # Bundle the entry point
