@@ -287,6 +287,12 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                        '--no-warn-script-location', requirement),
                        exclude=(deprecation + git_warnings))
 
+        # Bundle auxilliary application files
+        aux_files_path = glob.glob(appdir + '/files')
+        if aux_files_path:
+            aux_files_path = aux_files_path[0]
+            log('BUNDLE', os.path.basename(aux_files_path))
+            copy_tree(aux_files_path, 'AppDir/')
 
         # Bundle the entry point
         entrypoint_path = glob.glob(appdir + '/entrypoint.*')
