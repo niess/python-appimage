@@ -26,14 +26,14 @@ def _unpack_args(args):
     '''Unpack command line arguments
     '''
     return args.appdir, args.name, args.python_version, args.linux_tag,        \
-           args.python_tag, args.base_image, args.in_tree_build
+           args.python_tag, args.base_image, args.in_tree_build, args.extra_files
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
 _linux_pattern = re.compile('manylinux([0-9]+)_' + platform.machine())
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
-            python_tag=None, base_image=None, in_tree_build=False):
+            python_tag=None, base_image=None, in_tree_build=False, extra_files=None):
     '''Build a Python application using a base AppImage
     '''
 
@@ -288,11 +288,9 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                        exclude=(deprecation + git_warnings))
 
         # Bundle auxilliary application files
-        aux_files_path = glob.glob(appdir + '/files')
-        if aux_files_path:
-            aux_files_path = aux_files_path[0]
-            log('BUNDLE', os.path.basename(aux_files_path))
-            copy_tree(aux_files_path, 'AppDir/')
+        if extra_files is not None:
+            log('BUNDLE', os.path.basename(extra_files))
+            copy_tree(extra_files, 'AppDir/')
 
         # Bundle the entry point
         entrypoint_path = glob.glob(appdir + '/entrypoint.*')
