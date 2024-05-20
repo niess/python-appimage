@@ -12,7 +12,9 @@ def _initappimage():
 
     if command and ("APPDIR" in env):
         command = os.path.abspath(command)
+        sys.executable_original = sys.executable
         sys.executable = command
+        sys._base_executable_original = sys._base_executable
         sys._base_executable = command
 
 _initappimage()
