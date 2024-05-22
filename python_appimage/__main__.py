@@ -7,6 +7,11 @@ import sys
 __all__ = ['main']
 
 
+def exists(path):
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError("could not find: {}".format(path))
+    return os.path.abspath(path)
+
 def main():
     '''Entry point for the CLI
     '''
@@ -73,6 +78,8 @@ def main():
                                   help='force pip in-tree-build',
                                   action='store_true',
                                   default=False)
+    build_app_parser.add_argument('-x', '--extra-data', type=exists,
+        help='extra application data (bundled under $APPDIR/)', nargs='+')
 
     list_parser = subparsers.add_parser('list',
         description='List Python versions installed in a manylinux image')
