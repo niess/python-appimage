@@ -182,6 +182,36 @@ example, `$APPDIR` points to the AppImage mount point at runtime.
     `{{ python-executable }} -I` starts a fully isolated Python instance.
 {% endraw %}
 
+### Bundling data files
+
+`python-appimage` is also capable of bundling in auxilliary data files directly
+into the resulting AppImage. `-x/--extra-data` switch exists for that task.
+Consider following example.
+
+```bash
+echo -n "foo" > foo
+mkdir bar
+echo -n "baz" > bar/baz
+python-appimage [your regular parameters] -x foo bar/*
+```
+
+User data included in such a way becomes accessible to the Python code
+contained within the AppImage in a form of regular files under the directory
+pointed to by `APPDIR` environment variable. Example of Python 3 script
+that reads these exemplary files is presented below.
+
+```python
+import os, pathlib
+for fileName in ("foo", "baz"):
+  print((pathlib.Path(os.getenv("APPDIR")) / fileName).read_text())
+```
+
+Above code, when executed, would print following output.
+
+```bash
+foo
+baz
+```
 
 ## Advanced packaging
 
