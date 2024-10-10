@@ -1,7 +1,6 @@
-from distutils.dir_util import mkpath as _mkpath, remove_tree as _remove_tree
-from distutils.file_util import copy_file as _copy_file
 import errno
 import os
+import shutil
 
 from .log import debug
 
@@ -14,7 +13,7 @@ def make_tree(path):
     '''Create directories recursively if they don't exist
     '''
     debug('MKDIR', path)
-    return _mkpath(path)
+    return os.makedirs(path, exist_ok=True)
 
 
 def copy_file(source, destination, update=False, verbose=True):
@@ -23,7 +22,14 @@ def copy_file(source, destination, update=False, verbose=True):
     name = os.path.basename(source)
     if verbose:
         debug('COPY', '%s from %s', name, os.path.dirname(source))
-    _copy_file(source, destination, update=update)
+    if os.path.exists(source) and (
+        not update
+        or (
+            not os.path.exists(destination)
+            or (os.path.getmtime(source) > os.path.getmtime(destination))
+        )
+    ):
+        shutil.copy(source, destination)
 
 
 def copy_tree(source, destination):
@@ -38,7 +44,7 @@ def copy_tree(source, destination):
     for root, _, files in os.walk(source):
         relpath = os.path.relpath(root, source)
         dirname = os.path.join(destination, relpath)
-        _mkpath(dirname)
+        os.makedirs(dirname, exist_ok=True)
         for file_ in files:
             src = os.path.join(root, file_)
             dst = os.path.join(dirname, file_)
@@ -70,6 +76,6 @@ def remove_tree(path):
     name = os.path.basename(path)
     debug('REMOVE', '%s from %s', name, os.path.dirname(path))
     try:
-        _remove_tree(path)
+        shutil.rmtree(path)
     except OSError:
         pass
