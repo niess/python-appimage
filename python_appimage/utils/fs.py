@@ -1,7 +1,29 @@
-from distutils.dir_util import mkpath as _mkpath, remove_tree as _remove_tree
-from distutils.file_util import copy_file as _copy_file
 import errno
 import os
+
+try:
+    from distutils.dir_util import mkpath as _mkpath
+    from distutils.dir_util import remove_tree as _remove_tree
+    from distutils.file_util import copy_file as _copy_file
+
+except ImportError:
+    import shutil
+
+    def _mkpath(path):
+        os.makedirs(path, exist_ok=True)
+
+    def _remove_tree(path):
+        shutil.rmtree(path)
+
+    def _copy_file(source, destination, update=0):
+        if os.path.exists(source) and (
+            not update
+            or (
+                (not os.path.exists(destination))
+                or (os.path.getmtime(source) > os.path.getmtime(destination))
+            )
+        ):
+            shutil.copyfile(source, destination)
 
 from .log import debug
 

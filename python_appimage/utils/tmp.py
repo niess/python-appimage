@@ -20,5 +20,6 @@ def TemporaryDirectory():
     try:
         yield tmpdir
     finally:
+        debug('REMOVE', tmpdir)
         os.chdir(pwd)
         remove_tree(tmpdir)
