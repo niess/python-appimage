@@ -1,6 +1,29 @@
 import errno
 import os
-import shutil
+
+try:
+    from distutils.dir_util import mkpath as _mkpath
+    from distutils.dir_util import remove_tree as _remove_tree
+    from distutils.file_util import copy_file as _copy_file
+
+except ImportError:
+    import shutil
+
+    def _mkpath(path):
+        os.makedirs(path, exist_ok=True)
+
+    def _remove_tree(path):
+        shutil.rmtree(path)
+
+    def _copy_file(source, destination, update=0):
+        if os.path.exists(source) and (
+            not update
+            or (
+                (not os.path.exists(destination))
+                or (os.path.getmtime(source) > os.path.getmtime(destination))
+            )
+        ):
+            shutil.copyfile(source, destination)
 
 from .log import debug
 
@@ -13,7 +36,7 @@ def make_tree(path):
     '''Create directories recursively if they don't exist
     '''
     debug('MKDIR', path)
-    return os.makedirs(path, exist_ok=True)
+    return _mkpath(path)
 
 
 def copy_file(source, destination, update=False, verbose=True):
@@ -22,14 +45,7 @@ def copy_file(source, destination, update=False, verbose=True):
     name = os.path.basename(source)
     if verbose:
         debug('COPY', '%s from %s', name, os.path.dirname(source))
-    if os.path.exists(source) and (
-        not update
-        or (
-            not os.path.exists(destination)
-            or (os.path.getmtime(source) > os.path.getmtime(destination))
-        )
-    ):
-        shutil.copy(source, destination)
+    _copy_file(source, destination, update=update)
 
 
 def copy_tree(source, destination):
@@ -44,7 +60,7 @@ def copy_tree(source, destination):
     for root, _, files in os.walk(source):
         relpath = os.path.relpath(root, source)
         dirname = os.path.join(destination, relpath)
-        os.makedirs(dirname, exist_ok=True)
+        _mkpath(dirname)
         for file_ in files:
             src = os.path.join(root, file_)
             dst = os.path.join(dirname, file_)
@@ -76,6 +92,6 @@ def remove_tree(path):
     name = os.path.basename(path)
     debug('REMOVE', '%s from %s', name, os.path.dirname(path))
     try:
-        shutil.rmtree(path)
+        _remove_tree(path)
     except OSError:
         pass
