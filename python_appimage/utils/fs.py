@@ -23,7 +23,7 @@ except ImportError:
                 or (os.path.getmtime(source) > os.path.getmtime(destination))
             )
         ):
-            shutil.copyfile(source, destination)
+            shutil.copy(source, destination)
 
 from .log import debug
 
