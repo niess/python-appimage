@@ -202,9 +202,21 @@ def relocate_python(python=None, appdir=None):
     PYTHON_LIB = PYTHON_PREFIX + '/lib'
     PYTHON_PKG = PYTHON_LIB + '/' + PYTHON_X_Y
 
+    if not os.path.exists(HOST_PKG):
+        paths = glob.glob(HOST_PKG + '*')
+        if paths:
+            HOST_PKG = paths[0]
+            PYTHON_PKG = PYTHON_LIB + '/' + os.path.basename(HOST_PKG)
+        else:
+            raise ValueError('could not find {0:}'.format(HOST_PKG))
+
     if not os.path.exists(HOST_INC):
-        HOST_INC += 'm'
-        PYTHON_INC += 'm'
+        paths = glob.glob(HOST_INC + '*')
+        if paths:
+            HOST_INC = paths[0]
+            PYTHON_INC = PYTHON_INC + '/' + os.path.basename(HOST_INC)
+        else:
+            raise ValueError('could not find {0:}'.format(HOST_INC))
 
 
     # Copy the running Python's install
