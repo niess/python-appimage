@@ -94,6 +94,8 @@ def patch_binary(path, libdir, recursive=True):
     else:
         excluded = _excluded_libs
 
+    deps = ldd(path) # Fetch deps before patching RPATH.
+
     ensure_patchelf()
     rpath = '\'' + system((PATCHELF, '--print-rpath', path)) + '\''
     relpath = os.path.relpath(libdir, os.path.dirname(path))
@@ -102,7 +104,6 @@ def patch_binary(path, libdir, recursive=True):
     if rpath != expected:
         system((PATCHELF, '--set-rpath', expected, path))
 
-    deps = ldd(path)
     for dep in deps:
         name = os.path.basename(dep)
         if name in excluded:
