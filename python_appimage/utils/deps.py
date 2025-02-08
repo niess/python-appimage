@@ -36,22 +36,12 @@ def ensure_appimagetool():
         return False
 
     appimage = 'appimagetool-{0:}.AppImage'.format(_ARCH)
-    baseurl = 'https://github.com/AppImage/AppImageKit/releases/'              \
-              'download/12'
+    baseurl = 'https://github.com/AppImage/appimagetool/releases/download/continuous'
     log('INSTALL', 'appimagetool from %s', baseurl)
 
-    appdir_name = '.appimagetool.appdir'.format(_ARCH)
-    appdir = os.path.join(os.path.dirname(APPIMAGETOOL), appdir_name)
-    if not os.path.exists(appdir):
-        make_tree(os.path.dirname(appdir))
-        with TemporaryDirectory() as tmpdir:
-            urlretrieve(os.path.join(baseurl, appimage), appimage)
-            os.chmod(appimage, stat.S_IRWXU)
-            system(('./' + appimage, '--appimage-extract'))
-            copy_tree('squashfs-root', appdir)
-
-    if not os.path.exists(APPIMAGETOOL):
-        os.symlink(appdir_name + '/AppRun', APPIMAGETOOL)
+    make_tree(os.path.dirname(APPIMAGETOOL))
+    urlretrieve(os.path.join(baseurl, appimage), APPIMAGETOOL)
+    os.chmod(APPIMAGETOOL, stat.S_IRWXU)
 
     return True
 
