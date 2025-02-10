@@ -19,8 +19,11 @@ _ARCH = platform.machine()
 PREFIX = os.path.abspath(os.path.dirname(__file__) + '/..')
 '''Package installation prefix'''
 
-APPIMAGETOOL = os.path.expanduser('~/.local/bin/appimagetool')
+APPIMAGETOOL_DIR = os.path.expanduser('~/.local/bin')
 '''Location of the appimagetool binary'''
+
+APPIMAGETOOL_VERSION = '12'
+'''Version of the appimagetool binary'''
 
 EXCLUDELIST = PREFIX + '/data/excludelist'
 '''AppImage exclusion list'''
@@ -28,20 +31,35 @@ EXCLUDELIST = PREFIX + '/data/excludelist'
 PATCHELF = os.path.expanduser('~/.local/bin/patchelf')
 '''Location of the PatchELF binary'''
 
-
 def ensure_appimagetool():
     '''Fetch appimagetool from the web if not available locally
     '''
-    if os.path.exists(APPIMAGETOOL):
-        return False
 
+    if APPIMAGETOOL_VERSION == '12':
+        appimagetool_name = 'appimagetool'
+    else:
+        appimagetool_name = 'appimagetool-' + APPIMAGETOOL_VERSION
+    appimagetool = os.path.join(APPIMAGETOOL_DIR, appimagetool_name)
+    appdir_name = '.'.join(('', appimagetool_name, 'appdir', _ARCH))
+    appdir = os.path.join(APPIMAGETOOL_DIR, appdir_name)
+    apprun = os.path.join(appdir, 'AppRun')
+
+    if os.path.exists(apprun):
+        return apprun
     appimage = 'appimagetool-{0:}.AppImage'.format(_ARCH)
-    baseurl = 'https://github.com/AppImage/AppImageKit/releases/'              \
-              'download/12'
+
+    if APPIMAGETOOL_VERSION in map(str, range(1, 14)):
+        repository = 'AppImageKit'
+    else:
+        repository = 'appimagetool'
+    baseurl = os.path.join(
+        'https://github.com/AppImage',
+        repository,
+        'releases/download',
+        APPIMAGETOOL_VERSION
+    )
     log('INSTALL', 'appimagetool from %s', baseurl)
 
-    appdir_name = '.appimagetool.appdir'.format(_ARCH)
-    appdir = os.path.join(os.path.dirname(APPIMAGETOOL), appdir_name)
     if not os.path.exists(appdir):
         make_tree(os.path.dirname(appdir))
         with TemporaryDirectory() as tmpdir:
@@ -50,10 +68,7 @@ def ensure_appimagetool():
             system(('./' + appimage, '--appimage-extract'))
             copy_tree('squashfs-root', appdir)
 
-    if not os.path.exists(APPIMAGETOOL):
-        os.symlink(appdir_name + '/AppRun', APPIMAGETOOL)
-
-    return True
+    return apprun
 
 
 # Installers for dependencies
