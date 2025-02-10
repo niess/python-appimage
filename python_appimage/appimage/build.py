@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 from ..utils.compat import decode
-from ..utils.deps import APPIMAGETOOL, ensure_appimagetool
+from ..utils.deps import ensure_appimagetool
 from ..utils.docker import docker_run
 from ..utils.fs import copy_tree
 from ..utils.log import debug, log
@@ -22,10 +22,10 @@ def build_appimage(appdir=None, destination=None):
         appdir = 'AppDir'
 
     log('BUILD', appdir)
-    ensure_appimagetool()
+    appimagetool = ensure_appimagetool()
 
     arch = platform.machine()
-    cmd = ['ARCH=' + arch, APPIMAGETOOL, '--no-appstream', appdir]
+    cmd = ['ARCH=' + arch, appimagetool, '--no-appstream', appdir]
     if destination is not None:
         cmd.append(destination)
     cmd = ' '.join(cmd)
@@ -45,7 +45,8 @@ def build_appimage(appdir=None, destination=None):
         elif out:
             out = out.replace('%', '%%')[:-1]
             for line in out.split(os.linesep):
-                if line.startswith('WARNING'):
+                if line.startswith('WARNING') and \
+                    not line[9:].startswith('zsyncmake command is missing'):
                     log('WARNING', line[9:])
                 elif line.startswith('Error'):
                     raise RuntimeError(line)

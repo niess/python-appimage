@@ -27,6 +27,8 @@ def main():
                                        help='Command to execute',
                                        dest='command')
 
+    parser.add_argument('-a', '--appimagetool-version',
+        help='set appimagetool version')
     parser.add_argument('-q', '--quiet', help='disable logging',
         dest='verbosity', action='store_const', const='ERROR')
     parser.add_argument('-v', '--verbose', help='print extra information',
@@ -97,6 +99,10 @@ def main():
     if args.verbosity:
         from .utils import log
         log.set_level(args.verbosity)
+
+    if args.appimagetool_version:
+        from .utils import deps
+        deps.APPIMAGETOOL_VERSION = args.appimagetool_version
 
     # check if no arguments are passed
     if args.command is None:
