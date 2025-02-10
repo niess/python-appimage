@@ -16,6 +16,9 @@ def _unpack_args(args):
 def execute(binary):
     '''Print the location of a binary dependency
     '''
-    path = os.path.join(os.path.dirname(deps.PATCHELF), binary)
+    if binary == 'appimagetool':
+        path = deps.ensure_appimagetool(dry=True)
+    else:
+        path = os.path.join(os.path.dirname(deps.PATCHELF), binary)
     if os.path.exists(path):
         print(path)

@@ -31,7 +31,7 @@ EXCLUDELIST = PREFIX + '/data/excludelist'
 PATCHELF = os.path.expanduser('~/.local/bin/patchelf')
 '''Location of the PatchELF binary'''
 
-def ensure_appimagetool():
+def ensure_appimagetool(dry=False):
     '''Fetch appimagetool from the web if not available locally
     '''
 
@@ -44,7 +44,7 @@ def ensure_appimagetool():
     appdir = os.path.join(APPIMAGETOOL_DIR, appdir_name)
     apprun = os.path.join(appdir, 'AppRun')
 
-    if os.path.exists(apprun):
+    if dry or os.path.exists(apprun):
         return apprun
     appimage = 'appimagetool-{0:}.AppImage'.format(_ARCH)
 
