@@ -11,22 +11,22 @@ from .url import urlretrieve
 
 _ARCH = platform.machine()
 
-_CACHE_DIR = os.path.expanduser('~/.cache/python-appimage')
-
+CACHE_DIR = os.path.expanduser('~/.cache/python-appimage')
+'''Package cache location'''
 
 PREFIX = os.path.abspath(os.path.dirname(__file__) + '/..')
 '''Package installation prefix'''
 
-APPIMAGETOOL_DIR = os.path.join(_CACHE_DIR, 'bin')
+APPIMAGETOOL_DIR = os.path.join(CACHE_DIR, 'bin')
 '''Location of the appimagetool binary'''
 
 APPIMAGETOOL_VERSION = '12'
 '''Version of the appimagetool binary'''
 
-EXCLUDELIST = os.path.join(_CACHE_DIR, 'share/excludelist')
+EXCLUDELIST = os.path.join(CACHE_DIR, 'share/excludelist')
 '''AppImage exclusion list'''
 
-PATCHELF = os.path.join(_CACHE_DIR, 'bin/patchelf')
+PATCHELF = os.path.join(CACHE_DIR, 'bin/patchelf')
 '''Location of the PatchELF binary'''
 
 PATCHELF_VERSION = '0.14.3'
@@ -93,7 +93,7 @@ def ensure_patchelf():
     if os.path.exists(PATCHELF):
         return False
 
-    tgz = '-'.join(('patchelf', _PATCHELF_VERSION, _ARCH)) + '.tar.gz'
+    tgz = '-'.join(('patchelf', PATCHELF_VERSION, _ARCH)) + '.tar.gz'
     baseurl = 'https://github.com/NixOS/patchelf'
     log('INSTALL', 'patchelf from %s', baseurl)
 
@@ -102,7 +102,7 @@ def ensure_patchelf():
     make_tree(dirname)
     with TemporaryDirectory() as tmpdir:
         urlretrieve(os.path.join(baseurl, 'releases', 'download',
-                                 _PATCHELF_VERSION, tgz), tgz)
+                                 PATCHELF_VERSION, tgz), tgz)
         system(('tar', 'xzf', tgz))
         copy_file('bin/patchelf', patchelf)
     os.chmod(patchelf, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)

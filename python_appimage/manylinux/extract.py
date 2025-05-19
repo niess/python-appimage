@@ -1,3 +1,4 @@
+import atexit
 from dataclasses import dataclass, field
 from distutils.version import LooseVersion
 import glob
@@ -82,6 +83,10 @@ class PythonExtractor:
         ssl = glob.glob(str(self.prefix / 'opt/_internal/openssl-*'))
         if ssl:
             paths.append(Path(ssl[0]) / 'lib')
+
+        mpdecimal = glob.glob(str(self.prefix / 'opt/_internal/mpdecimal-*'))
+        if mpdecimal:
+            paths.append(Path(mpdecimal[0]) / 'lib')
 
         object.__setattr__(self, 'library_path', paths)
 
@@ -307,21 +312,56 @@ class ImageExtractor:
     '''Manylinux image tag.'''
 
 
-    def extract(self, destination: Path):
+    def default_destination(self):
+        return self.prefix / f'extracted/{self.tag}'
+
+
+    def extract(self, destination: Optional[Path]=None, *, cleanup=False):
         '''Extract Manylinux image.'''
+
+        if destination is None:
+            destination = self.default_destination()
+
+        if cleanup:
+            def cleanup(destination):
+                shutil.rmtree(destination, ignore_errors=True)
+            atexit.register(cleanup, destination)
 
         with open(self.prefix / f'tags/{self.tag}.json') as f:
             meta = json.load(f)
         layers = meta['layers']
 
-        for layer in layers:
-            debug('EXTRACT', f'{layer}.tar.gz')
+        extracted = []
+        extracted_file = destination / '.extracted'
+        if destination.exists():
+            clean_destination = True
+            if extracted_file.exists():
+                with extracted_file.open() as f:
+                    extracted = f.read().split(os.linesep)[:-1]
 
+                for a, b in zip(layers, extracted):
+                    if a != b:
+                        break
+                else:
+                    clean_destination = False
+
+            if clean_destination:
+                shutil.rmtree(destination, ignore_errors=True)
+
+        for i, layer in enumerate(layers):
+            try:
+                if layer == extracted[i]:
+                    continue
+            except IndexError:
+                pass
+
+            debug('EXTRACT', f'{layer}.tar.gz')
             filename = self.prefix / f'layers/{layer}.tar.gz'
-            cmd = ' && '.join((
-                 f'mkdir -p {destination}',
-                 f'tar -xzf {filename} -C {destination}',
-                 f'chmod u+rw -R {destination}'
+            cmd = ''.join((
+                 f'trap \'chmod u+rw -R {destination}\' EXIT ; ',
+                 f'mkdir -p {destination} && ',
+                 f'tar -xzf {filename} -C {destination} && ',
+                 f'echo \'{layer}\' >> {extracted_file}'
             ))
-            process = subprocess.run(cmd, shell=True, check=True,
-                                     capture_output=True)
+            process = subprocess.run(f'/bin/bash -c "{cmd}"', shell=True,
+                                     check=True, capture_output=True)

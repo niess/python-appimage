@@ -10,6 +10,7 @@ import tempfile
 from typing import List, Optional
 
 from .config import Arch, LinuxTag
+from ..utils.deps import CACHE_DIR
 from ..utils.log import debug, log
 
 
@@ -52,12 +53,16 @@ class Downloader:
         object.__setattr__(self, 'image', image)
 
 
+    def default_destination(self):
+        return Path(CACHE_DIR) / f'share/images/{self.image}'
+
+
     def download(
         self,
         destination: Optional[Path]=None,
         tag: Optional[str] = 'latest'):
 
-        destination = destination or Path(self.image)
+        destination = destination or self.default_destination()
 
         # Authenticate to quay.io.
         repository = f'pypa/{self.image}'
@@ -88,9 +93,26 @@ class Downloader:
         # Check missing layers to download.
         required = [layer['digest'].split(':', 1)[-1] for layer in
                     manifest['layers']]
-        is_missing = lambda hash_: \
-            not (destination / f'layers/{hash_}.tar.gz').exists()
-        missing = tuple(filter(is_missing, required))
+
+        missing = []
+        for hash_ in required:
+            path = destination / f'layers/{hash_}.tar.gz'
+            if path.exists():
+                hasher = hashlib.sha256()
+                with path.open('rb') as f:
+                    while True:
+                        chunk = f.read(CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        else:
+                            hasher.update(chunk)
+                    h = hasher.hexdigest()
+                    if h != hash_:
+                        missing.append(hash_)
+                    else:
+                        debug('FOUND', f'{hash_}.tar.gz')
+            else:
+                missing.append(hash_)
 
         # Fetch missing layers.
         with tempfile.TemporaryDirectory() as tmpdir:
