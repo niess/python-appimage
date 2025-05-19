@@ -172,11 +172,11 @@ def relocate_python(python=None, appdir=None):
 
     # Set some key variables & paths
     if python:
-        FULLVERSION = system((python, '-c',
-            '"import sys; print(\'{:}.{:}.{:}\'.format(*sys.version_info[:3]))"'))
+        FULLVERSION = system((python, '-c', '"import sys; print(sys.version)"'))
         FULLVERSION = FULLVERSION.strip()
     else:
-        FULLVERSION = '{:}.{:}.{:}'.format(*sys.version_info[:3])
+        FULLVERSION = sys.version
+    FULLVERSION = FULLVERSION.split(None, 1)[0]
     VERSION = '.'.join(FULLVERSION.split('.')[:2])
     PYTHON_X_Y = 'python' + VERSION
     PIP_X_Y = 'pip' + VERSION
