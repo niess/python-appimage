@@ -77,7 +77,7 @@ _excluded_libs = None
 
 
 def patch_binary(path, libdir, recursive=True):
-    '''Patch the RPATH of a binary and and fetch its dependencies
+    '''Patch the RPATH of a binary and fetch its dependencies
     '''
     global _excluded_libs
 

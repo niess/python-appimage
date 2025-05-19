@@ -32,6 +32,10 @@ def urlretrieve(url, filename=None):
     else:
         debug('DOWNLOAD', '%s as %s', url, filename)
 
+    parent_directory = os.path.dirname(filename)
+    if not os.path.exists(parent_directory):
+        os.makedirs(parent_directory)
+
     if _urlretrieve is None:
         data = urllib2.urlopen(url).read()
         with open(filename, 'w') as f:
