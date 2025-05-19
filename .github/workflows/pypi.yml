@@ -5,16 +5,22 @@ on:
       - master
     paths:
       - 'VERSION'
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: 'Upload to PyPI'
+        required: true
+        type: boolean
 
 jobs:
   Test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['3.9']
+        version: ['3.11']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.version }}
@@ -31,10 +37,10 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Build wheel
       run: |
@@ -43,7 +49,7 @@ jobs:
         python setup.py bdist_wheel --universal
 
     - name: Upload to PyPI
-      if: github.ref == 'refs/heads/master'
+      if: (github.ref == 'refs/heads/master') && inputs.upload
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.PYPI_TOKEN }}
