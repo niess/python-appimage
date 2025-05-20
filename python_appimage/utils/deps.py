@@ -41,7 +41,6 @@ def ensure_appimagetool(dry=False):
         appimagetool_name = 'appimagetool'
     else:
         appimagetool_name = 'appimagetool-' + APPIMAGETOOL_VERSION
-    appimagetool = os.path.join(APPIMAGETOOL_DIR, appimagetool_name)
     appdir_name = '.'.join(('', appimagetool_name, 'appdir', _ARCH))
     appdir = os.path.join(APPIMAGETOOL_DIR, appdir_name)
     apprun = os.path.join(appdir, 'AppRun')

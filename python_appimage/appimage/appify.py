@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 import glob
 import os
-import re
-from typing import Optional, Tuple
+from typing import Optional
 
 from ..utils.deps import PREFIX
-from ..utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
-from ..utils.log import debug, log
+from ..utils.fs import copy_file, make_tree, remove_file
+from ..utils.log import log
 from ..utils.template import copy_template, load_template
 
 
 @dataclass(frozen=True)
 class Appifier:
+    '''Helper class for bundling AppImage specific files'''
 
     '''Path to AppDir root.'''
     appdir: str
@@ -34,8 +34,8 @@ class Appifier:
     '''Path to SSL certification file.'''
     cert_src: Optional[str]=None
 
-
     def appify(self):
+        '''Bundle Appimage specific files'''
 
         python_x_y = f'python{self.version.short()}'
         pip_x_y = f'pip{self.version.short()}'
@@ -226,6 +226,7 @@ export TKPATH="${{TK_LIBRARY}}"'''.format(
     tk_version=tk_version)
     else:
         return ''
+
 
 def set_executable_patch(version, pkgpath, patch):
     '''Set a runtime patch for sys.executable name

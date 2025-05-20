@@ -1,7 +1,6 @@
 import argparse
 from importlib import import_module
 import os
-import sys
 
 
 __all__ = ['main']
@@ -11,6 +10,7 @@ def exists(path):
     if not os.path.exists(path):
         raise argparse.ArgumentTypeError("could not find: {}".format(path))
     return os.path.abspath(path)
+
 
 def main():
     '''Entry point for the CLI
@@ -41,10 +41,8 @@ def main():
 
     build_parser = subparsers.add_parser('build',
         description='Build a Python appimage')
-    build_subparsers = build_parser.add_subparsers(
-                           title='type',
-                           help='Type of AppImage build',
-                           dest='sub_command')
+    build_subparsers = build_parser.add_subparsers(title='type',
+        help='Type of AppImage build', dest='sub_command')
 
     build_local_parser = build_subparsers.add_parser('local',
         description='Bundle a local Python installation')
@@ -124,5 +122,5 @@ def main():
     command.execute(*command._unpack_args(args))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

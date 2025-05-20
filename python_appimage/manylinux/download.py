@@ -1,4 +1,3 @@
-import collections
 from dataclasses import dataclass, field
 import glob
 import hashlib
@@ -7,7 +6,7 @@ from pathlib import Path
 import requests
 import shutil
 import tempfile
-from typing import List, Optional
+from typing import Optional
 
 from .config import Arch, LinuxTag
 from ..utils.deps import CACHE_DIR
@@ -21,6 +20,7 @@ SUCCESS = 200
 
 class DownloadError(Exception):
     pass
+
 
 class TarError(Exception):
     pass
@@ -135,7 +135,7 @@ class Downloader:
                 hasher = hashlib.sha256()
                 tmp = workdir / 'layer.tgz'
                 with open(tmp, "wb") as f:
-                    for chunk in r.iter_content(CHUNK_SIZE): 
+                    for chunk in r.iter_content(CHUNK_SIZE):
                         if chunk:
                             f.write(chunk)
                             hasher.update(chunk)
@@ -143,7 +143,7 @@ class Downloader:
                     h = hasher.hexdigest()
                     if h != hash_:
                         raise DownloadError(
-                            f'bad hash (expected {name}, found {h})'
+                            f'bad hash (expected {hash_}, found {h})'
                         )
                 layers_dir = destination / 'layers'
                 layers_dir.mkdir(exist_ok=True, parents=True)

@@ -8,7 +8,7 @@ import stat
 import struct
 
 from ...appimage import build_appimage
-from ...utils.compat import decode, find_spec
+from ...utils.compat import find_spec
 from ...utils.deps import PREFIX
 from ...utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
 from ...utils.log import log
@@ -32,6 +32,7 @@ def _unpack_args(args):
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
 _linux_pattern = re.compile('manylinux([0-9]+)_' + platform.machine())
+
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
             python_tag=None, base_image=None, in_tree_build=False,
@@ -311,8 +312,6 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
                 shebang = '#! /bin/bash'
 
             entrypoint = load_template(entrypoint_path, **dictionary)
-            python_pkg = 'AppDir/opt/python{0:}/lib/python{0:}'.format(
-                python_version)
             dictionary = {'entrypoint': entrypoint,
                           'shebang': shebang}
             if os.path.exists('AppDir/AppRun'):

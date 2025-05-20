@@ -28,7 +28,7 @@ def urlretrieve(url, filename=None):
     '''
     if filename is None:
         filename = os.path.basename(url)
-        debug('DOWNLOAD', '%s from %s', name, os.path.dirname(url))
+        debug('DOWNLOAD', '%s from %s', filename, os.path.dirname(url))
     else:
         debug('DOWNLOAD', '%s as %s', url, filename)
 

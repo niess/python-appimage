@@ -6,10 +6,7 @@ import sys
 
 from ..utils.compat import decode
 from ..utils.deps import ensure_appimagetool
-from ..utils.docker import docker_run
-from ..utils.fs import copy_tree
 from ..utils.log import debug, log
-from ..utils.tmp import TemporaryDirectory
 
 
 __all__ = ['build_appimage']
@@ -36,7 +33,7 @@ def build_appimage(appdir=None, destination=None):
 
     appimage_pattern = re.compile('should be packaged as ([^ ]+[.]AppImage)')
 
-    stdout, appimage = [], None
+    stdout = []
     while True:
         out = decode(p.stdout.readline())
         stdout.append(out)

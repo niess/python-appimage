@@ -19,6 +19,6 @@ def execute(*args):
     bindir = os.path.dirname(deps.PATCHELF)
     for binary in args:
         installed = getattr(deps, 'ensure_' + binary)()
-        words = 'has been' if installed else 'already' 
+        words = 'has been' if installed else 'already'
         log('INSTALL',
             '{:} {:} installed in {:}'.format(binary, words, bindir))

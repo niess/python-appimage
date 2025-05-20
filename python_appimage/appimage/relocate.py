@@ -6,10 +6,11 @@ import sys
 
 from .appify import Appifier
 from ..manylinux import PythonVersion
-from ..utils.deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,    \
+from ..utils.deps import EXCLUDELIST, PATCHELF, ensure_excludelist, \
                          ensure_patchelf
-from ..utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
-from ..utils.log import debug, log
+from ..utils.fs import copy_file, copy_tree, make_tree, remove_file, \
+                       remove_tree
+from ..utils.log import log
 from ..utils.system import ldd, system
 
 
@@ -55,7 +56,6 @@ def patch_binary(path, libdir, recursive=True):
             continue
         target = libdir + '/' + name
         if not os.path.exists(target):
-            libname = os.path.basename(dep)
             copy_file(dep, target)
             if recursive:
                 patch_binary(target, libdir, recursive=True)

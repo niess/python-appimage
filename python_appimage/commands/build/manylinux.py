@@ -1,16 +1,10 @@
-import glob
 import os
 from pathlib import Path
-import platform
 import shutil
-import sys
 
-from ...appimage import build_appimage, relocate_python
+from ...appimage import build_appimage
 from ...manylinux import Arch, Downloader, ImageExtractor, LinuxTag, \
                          PythonExtractor
-from ...utils.docker import docker_run
-from ...utils.fs import copy_tree
-from ...utils.manylinux import format_appimage_name, format_tag
 from ...utils.tmp import TemporaryDirectory
 
 
@@ -21,17 +15,6 @@ def _unpack_args(args):
     '''Unpack command line arguments
     '''
     return args.tag, args.abi
-
-
-def _get_appimage_name(abi, tag):
-    '''Format the Python AppImage name using the ABI and OS tags
-    '''
-    # Read the Python version from the desktop file
-    desktop = glob.glob('AppDir/python*.desktop')[0]
-    fullversion = desktop[13:-8]
-
-    # Finish building the AppImage on the host. See below.
-    return format_appimage_name(abi, fullversion, tag)
 
 
 def execute(tag, abi):

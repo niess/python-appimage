@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 import stat
 import subprocess
-from typing import Dict, List, NamedTuple, Optional, Union
+from typing import Dict, List, Optional
 
 from .config import Arch, PythonImpl, PythonVersion
 from ..appimage import Appifier
@@ -307,7 +307,7 @@ class PythonExtractor:
                 if (match not in dependencies) and (match not in self.excluded):
                     path = self.locate_library(match)
                     dependencies[match] = path
-                    subs = recurse(path)
+                    recurse(path)
 
         recurse(target)
         return dependencies
@@ -396,5 +396,5 @@ class ImageExtractor:
                  f'tar -xzf {filename} -C {destination} && ',
                  f'echo \'{layer}\' >> {extracted_file}'
             ))
-            process = subprocess.run(f'/bin/bash -c "{cmd}"', shell=True,
-                                     check=True, capture_output=True)
+            subprocess.run(f'/bin/bash -c "{cmd}"', shell=True,
+                           check=True, capture_output=True)

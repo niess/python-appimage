@@ -1,7 +1,6 @@
 import os
 
 from ..utils import deps
-from ..utils.log import log
 
 
 __all__ = ['execute']
