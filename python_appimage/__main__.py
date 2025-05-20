@@ -59,9 +59,6 @@ def main():
     build_manylinux_parser.add_argument('abi',
         help='python ABI (e.g. cp37-cp37m)')
 
-    build_manylinux_parser.add_argument('--contained', help=argparse.SUPPRESS,
-                                        action='store_true', default=False)
-
     build_app_parser = build_subparsers.add_parser('app',
         description='Build a Python application using a base AppImage')
     build_app_parser.add_argument('appdir',

@@ -12,7 +12,8 @@ import subprocess
 from typing import Dict, List, NamedTuple, Optional, Union
 
 from .config import Arch, PythonImpl, PythonVersion
-from ..utils.deps import ensure_excludelist, EXCLUDELIST
+from ..utils.deps import ensure_excludelist, ensure_patchelf, EXCLUDELIST, \
+                         PATCHELF
 from ..utils.log import debug, log
 
 
@@ -106,17 +107,8 @@ class PythonExtractor:
 
         # Set patchelf, if not provided.
         if self.patchelf is None:
-            paths = (
-                Path(__file__).parent / 'bin',
-                Path.home() / '.local/bin'
-            )
-            for path in paths:
-                patchelf = path / 'patchelf'
-                if patchelf.exists():
-                    break
-            else:
-                raise NotImplementedError()
-            object.__setattr__(self, 'patchelf', patchelf)
+            ensure_patchelf()
+            object.__setattr__(self, 'patchelf', PATCHELF)
         else:
             assert(self.patchelf.exists())
 
@@ -124,6 +116,7 @@ class PythonExtractor:
     def extract(
         self,
         destination: Path,
+        *,
         python_prefix: Optional[str]=None,
         system_prefix: Optional[str]=None
         ):
@@ -131,11 +124,11 @@ class PythonExtractor:
 
         python = f'python{self.version.short()}'
         runtime = f'bin/{python}'
-        packages = f'lib/{python}'
+        packages = f'lib/python{self.version.flavoured()}'
         pip = f'bin/pip{self.version.short()}'
 
         if python_prefix is None:
-            python_prefix = f'opt/{python}'
+            python_prefix = f'opt/python{self.version.flavoured()}'
 
         if system_prefix is None:
             system_prefix = 'usr'
@@ -152,6 +145,8 @@ class PythonExtractor:
             raise NotImplementedError()
 
         # Clone Python runtime.
+        log('CLONE',
+            f'{python} from {self.python_prefix.relative_to(self.prefix)}')
         (python_dest / 'bin').mkdir(exist_ok=True, parents=True)
         shutil.copy(self.python_prefix / runtime, python_dest / runtime)
 
@@ -191,6 +186,7 @@ class PythonExtractor:
                             symlinks=True, dirs_exist_ok=True)
 
         # Remove some clutters.
+        log('PRUNE', '%s packages', python)
         shutil.rmtree(python_dest / packages / 'test', ignore_errors=True)
         for root, dirs, files in os.walk(python_dest / packages):
             root = Path(root)
@@ -226,6 +222,7 @@ class PythonExtractor:
             self.set_rpath(dst, '$ORIGIN')
 
         # Patch RPATHs of binary modules.
+        log('LINK', '%s C-extensions', python)
         path = Path(python_dest / f'{packages}/lib-dynload')
         for module in glob.glob(str(path / "*.so")):
             src = Path(module)
@@ -245,6 +242,7 @@ class PythonExtractor:
             assert(certifi.name == 'certifi')
             site_packages = certifi.parent
             assert(site_packages.name == 'site-packages')
+            log('INSTALL', certifi.name)
 
             for src in glob.glob(str(site_packages / 'certifi*')):
                 src = Path(src)
@@ -264,6 +262,7 @@ class PythonExtractor:
         tx_version.sort()
         tx_version = tx_version[-1]
 
+        log('INSTALL', f'Tcl/Tk{tx_version}')
         tcltk_dir = Path(system_dest / 'share/tcltk')
         tcltk_dir.mkdir(exist_ok=True, parents=True)
 

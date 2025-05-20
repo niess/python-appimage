@@ -1,6 +1,6 @@
 from enum import auto, Enum
 import platform
-from typing import NamedTuple, Union
+from typing import NamedTuple, Optional, Union
 
 
 __all__ = ['Arch', 'PythonImpl', 'PythonVersion']
@@ -52,10 +52,20 @@ class LinuxTag(Enum):
         else:
             raise NotImplementedError(value)
 
+    @classmethod
+    def from_brief(cls, value) -> 'LinuxTag':
+        if value.startswith('2_'):
+            return cls.from_str('manylinux_' + value)
+        else:
+            return cls.from_str('manylinux' + value)
+
 
 class PythonImpl(Enum):
     '''Supported Python implementations.'''
     CPYTHON = auto()
+
+    def __str__(self):
+        return 'python'
 
 
 class PythonVersion(NamedTuple):
@@ -64,15 +74,33 @@ class PythonVersion(NamedTuple):
     major: int
     minor: int
     patch: Union[int, str]
+    flavour: Optional[str]=None
 
     @classmethod
     def from_str(cls, value: str) -> 'PythonVersion':
         major, minor, patch = value.split('.', 2)
         try:
+            patch, flavour = patch.split('-', 1)
+        except ValueError:
+            flavour = None
+        else:
+            if flavour == 'nogil':
+                flavour = 't'
+            elif flavour == 'ucs2':
+                flavour = 'm'
+            elif flavour == 'ucs4':
+                flavour = 'mu'
+            else:
+                raise NotImplementedError(value)
+        try:
             patch = int(patch)
         except ValueError:
             pass
-        return cls(int(major), int(minor), patch)
+        return cls(int(major), int(minor), patch, flavour)
+
+    def flavoured(self) -> str:
+        flavour = self.flavour if self.flavour == 't' else ''
+        return f'{self.major}.{self.minor}{flavour}'
 
     def long(self) -> str:
         return f'{self.major}.{self.minor}.{self.patch}'
