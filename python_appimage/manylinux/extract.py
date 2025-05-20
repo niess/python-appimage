@@ -121,13 +121,27 @@ class PythonExtractor:
             assert(self.patchelf.exists())
 
 
-    def extract(self, destination):
+    def extract(
+        self,
+        destination: Path,
+        python_prefix: Optional[str]=None,
+        system_prefix: Optional[str]=None
+        ):
         '''Extract Python runtime.'''
 
         python = f'python{self.version.short()}'
         runtime = f'bin/{python}'
         packages = f'lib/{python}'
         pip = f'bin/pip{self.version.short()}'
+
+        if python_prefix is None:
+            python_prefix = f'opt/{python}'
+
+        if system_prefix is None:
+            system_prefix = 'usr'
+
+        python_dest = destination / python_prefix
+        system_dest = destination / system_prefix
 
         # Locate include files.
         include = glob.glob(str(self.python_prefix / 'include/*'))
@@ -138,13 +152,13 @@ class PythonExtractor:
             raise NotImplementedError()
 
         # Clone Python runtime.
-        (destination / 'bin').mkdir(exist_ok=True, parents=True)
-        shutil.copy(self.python_prefix / runtime, destination / runtime)
+        (python_dest / 'bin').mkdir(exist_ok=True, parents=True)
+        shutil.copy(self.python_prefix / runtime, python_dest / runtime)
 
-        short = Path(destination / f'bin/python{self.version.major}')
+        short = Path(python_dest / f'bin/python{self.version.major}')
         short.unlink(missing_ok=True)
         short.symlink_to(python)
-        short = Path(destination / 'bin/python')
+        short = Path(python_dest / 'bin/python')
         short.unlink(missing_ok=True)
         short.symlink_to(f'python{self.version.major}')
 
@@ -153,7 +167,7 @@ class PythonExtractor:
             f.readline() # Skip shebang.
             body = f.read()
 
-        with open(destination / pip, 'w') as f:
+        with open(python_dest / pip, 'w') as f:
             f.write('#! /bin/sh\n')
             f.write(' '.join((
                 '"exec"',
@@ -162,23 +176,23 @@ class PythonExtractor:
                 '"$@"\n'
             )))
             f.write(body)
-        shutil.copymode(self.python_prefix / pip, destination / pip)
+        shutil.copymode(self.python_prefix / pip, python_dest / pip)
 
-        short = Path(destination / f'bin/pip{self.version.major}')
+        short = Path(python_dest / f'bin/pip{self.version.major}')
         short.unlink(missing_ok=True)
         short.symlink_to(f'pip{self.version.short()}')
-        short = Path(destination / 'bin/pip')
+        short = Path(python_dest / 'bin/pip')
         short.unlink(missing_ok=True)
         short.symlink_to(f'pip{self.version.major}')
 
         # Clone Python packages.
         for folder in (packages, include):
-            shutil.copytree(self.python_prefix / folder, destination / folder,
+            shutil.copytree(self.python_prefix / folder, python_dest / folder,
                             symlinks=True, dirs_exist_ok=True)
 
         # Remove some clutters.
-        shutil.rmtree(destination / packages / 'test', ignore_errors=True)
-        for root, dirs, files in os.walk(destination / packages):
+        shutil.rmtree(python_dest / packages / 'test', ignore_errors=True)
+        for root, dirs, files in os.walk(python_dest / packages):
             root = Path(root)
             for d in dirs:
                 if d == '__pycache__':
@@ -195,7 +209,9 @@ class PythonExtractor:
             libs.update(l)
 
         # Copy and patch binary dependencies.
-        libdir = destination / 'lib'
+        libdir = system_dest / 'lib'
+        libdir.mkdir(exist_ok=True, parents=True)
+
         for (name, src) in libs.items():
             dst = libdir / name
             shutil.copy(src, dst, follow_symlinks=True)
@@ -210,14 +226,14 @@ class PythonExtractor:
             self.set_rpath(dst, '$ORIGIN')
 
         # Patch RPATHs of binary modules.
-        path = Path(destination / f'{packages}/lib-dynload')
+        path = Path(python_dest / f'{packages}/lib-dynload')
         for module in glob.glob(str(path / "*.so")):
             src = Path(module)
             dst = os.path.relpath(libdir, src.parent)
             self.set_rpath(src, f'$ORIGIN/{dst}')
 
         # Patch RPATHs of Python runtime.
-        src = destination / runtime
+        src = python_dest / runtime
         dst = os.path.relpath(libdir, src.parent)
         self.set_rpath(src, f'$ORIGIN/{dst}')
 
@@ -232,7 +248,7 @@ class PythonExtractor:
 
             for src in glob.glob(str(site_packages / 'certifi*')):
                 src = Path(src)
-                dst = destination / f'{packages}/site-packages/{src.name}'
+                dst = python_dest / f'{packages}/site-packages/{src.name}'
                 if not dst.exists():
                     shutil.copytree(src, dst, symlinks=True)
         else:
@@ -248,7 +264,7 @@ class PythonExtractor:
         tx_version.sort()
         tx_version = tx_version[-1]
 
-        tcltk_dir = Path(destination / 'usr/share/tcltk')
+        tcltk_dir = Path(system_dest / 'share/tcltk')
         tcltk_dir.mkdir(exist_ok=True, parents=True)
 
         for tx in ('tcl', 'tk'):

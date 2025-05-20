@@ -60,7 +60,9 @@ class Downloader:
     def download(
         self,
         destination: Optional[Path]=None,
-        tag: Optional[str] = 'latest'):
+        tag: Optional[str] = 'latest'
+        ):
+        '''Download Manylinux image'''
 
         destination = destination or self.default_destination()
 
