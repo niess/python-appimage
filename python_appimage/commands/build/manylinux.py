@@ -56,13 +56,20 @@ def execute(tag, abi):
             tag = abi
         )
         appdir = Path(tmpdir) / 'AppDir'
-        python_extractor.extract(appdir)
+        python_extractor.extract(appdir, appify=True)
 
         fullname = '-'.join((
             f'{python_extractor.impl}{python_extractor.version.long()}',
             abi,
             f'{tag}_{arch}'
         ))
-        shutil.move(appdir, os.path.join(pwd, fullname))
 
-        # XXX build_appimage(destination=_get_appimage_name(abi, tag))
+        destination = f'{fullname}.AppImage'
+        build_appimage(
+            appdir = str(appdir),
+            destination = destination
+        )
+        shutil.move(
+            Path(tmpdir) / destination,
+            Path(pwd) / destination
+        )

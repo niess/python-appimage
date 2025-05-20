@@ -21,7 +21,7 @@ def build_appimage(appdir=None, destination=None):
     if appdir is None:
         appdir = 'AppDir'
 
-    log('BUILD', appdir)
+    log('BUILD', os.path.basename(appdir))
     appimagetool = ensure_appimagetool()
 
     arch = platform.machine()

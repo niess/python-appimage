@@ -4,71 +4,16 @@ import re
 import shutil
 import sys
 
+from .appify import Appifier
+from ..manylinux import PythonVersion
 from ..utils.deps import EXCLUDELIST, PATCHELF, PREFIX, ensure_excludelist,    \
                          ensure_patchelf
 from ..utils.fs import copy_file, copy_tree, make_tree, remove_file, remove_tree
 from ..utils.log import debug, log
 from ..utils.system import ldd, system
-from ..utils.template import copy_template, load_template
 
 
-__all__ = ["cert_file_env_string", "patch_binary", "relocate_python",
-           "tcltk_env_string"]
-
-
-def _copy_template(name, destination, **kwargs):
-    path = os.path.join(PREFIX, 'data', name)
-    copy_template(path, destination, **kwargs)
-
-
-def _get_tk_version(python_pkg):
-    tkinter = glob.glob(python_pkg + '/lib-dynload/_tkinter*.so')
-    if tkinter:
-        tkinter = tkinter[0]
-        for dep in ldd(tkinter):
-            name = os.path.basename(dep)
-            if name.startswith('libtk'):
-                match = re.search('libtk([0-9]+[.][0-9]+)', name)
-                return match.group(1)
-        else:
-            raise RuntimeError('could not guess Tcl/Tk version')
-
-
-def _get_tk_libdir(version):
-    try:
-        library = system(('tclsh' + version,), stdin='puts [info library]')
-    except SystemError:
-        raise RuntimeError('could not locate Tcl/Tk' + version + ' library')
-
-    return os.path.dirname(library)
-
-
-def tcltk_env_string(python_pkg):
-    '''Environment for using AppImage's TCl/Tk
-    '''
-    tk_version = _get_tk_version(python_pkg)
-
-    if tk_version:
-        return '''
-# Export TCl/Tk
-export TCL_LIBRARY="${{APPDIR}}/usr/share/tcltk/tcl{tk_version:}"
-export TK_LIBRARY="${{APPDIR}}/usr/share/tcltk/tk{tk_version:}"
-export TKPATH="${{TK_LIBRARY}}"'''.format(
-    tk_version=tk_version)
-    else:
-        return ''
-
-
-def cert_file_env_string(cert_file):
-    '''Environment for using a bundled certificate
-    '''
-    if cert_file:
-        return '''
-# Export SSL certificate
-export SSL_CERT_FILE="${{APPDIR}}{cert_file:}"'''.format(
-    cert_file=cert_file)
-    else:
-        return ''
+__all__ = ['patch_binary', 'relocate_python']
 
 
 _excluded_libs = None
@@ -114,48 +59,6 @@ def patch_binary(path, libdir, recursive=True):
             copy_file(dep, target)
             if recursive:
                 patch_binary(target, libdir, recursive=True)
-
-
-def set_executable_patch(version, pkgpath, patch):
-    '''Set a runtime patch for sys.executable name
-    '''
-
-    # This patch needs to be executed before site.main() is called. A natural
-    # option is to apply it directy to the site module. But, starting with
-    # Python 3.11, the site module is frozen within Python executable. Then,
-    # doing so would require to recompile Python. Thus, starting with 3.11 we
-    # instead apply the patch to the encodings package. Indeed, the latter is
-    # loaded before the site module, and it is not frozen (as for now).
-    major, minor = [int(v) for v in version.split('.')]
-    if (major >= 3) and (minor >= 11):
-        path = os.path.join(pkgpath, 'encodings', '__init__.py')
-    else:
-        path = os.path.join(pkgpath, 'site.py')
-
-    with open(path) as f:
-        source = f.read()
-
-    if '_initappimage' in source: return
-
-    lines = source.split(os.linesep)
-
-    if path.endswith('site.py'):
-        # Insert the patch before the main function
-        for i, line in enumerate(lines):
-            if line.startswith('def main('): break
-    else:
-        # Append the patch at end of file
-        i = len(lines)
-
-    with open(patch) as f:
-        patch = f.read()
-
-    lines.insert(i, patch)
-    lines.insert(i + 1, '')
-
-    source = os.linesep.join(lines)
-    with open(path, 'w') as f:
-        f.write(source)
 
 
 def relocate_python(python=None, appdir=None):
@@ -255,9 +158,6 @@ def relocate_python(python=None, appdir=None):
             f.write(body)
         shutil.copymode(pip_source, target)
 
-        relpath = os.path.relpath(target, APPDIR_BIN)
-        os.symlink(relpath, APPDIR_BIN + '/' + PIP_X_Y)
-
 
     # Remove unrelevant files
     log('PRUNE', '%s packages', PYTHON_X_Y)
@@ -268,17 +168,6 @@ def relocate_python(python=None, appdir=None):
     matches = glob.glob(PYTHON_PKG + '/config-*-linux-*')
     for path in matches:
         remove_tree(path)
-
-    # Add a runtime patch for sys.executable, before site.main() execution
-    log('PATCH', '%s sys.executable', PYTHON_X_Y)
-    set_executable_patch(VERSION, PYTHON_PKG, PREFIX + '/data/_initappimage.py')
-
-    # Set a hook for cleaning sys.path, after site.main() execution
-    log('HOOK', '%s sys.path', PYTHON_X_Y)
-
-    sitepkgs = PYTHON_PKG + '/site-packages'
-    make_tree(sitepkgs)
-    copy_file(PREFIX + '/data/sitecustomize.py', sitepkgs)
 
 
     # Set RPATHs and bundle external libraries
@@ -320,111 +209,35 @@ def relocate_python(python=None, appdir=None):
         copy_file(cert_file, 'AppDir' + cert_file)
         log('INSTALL', basename)
 
+    # Bundle AppImage specific files.
+    appifier = Appifier(
+        appdir = APPDIR,
+        appdir_bin = APPDIR_BIN,
+        python_bin = PYTHON_BIN,
+        python_pkg = PYTHON_PKG,
+        tk_version = tk_version,
+        version = PythonVersion.from_str(FULLVERSION)
+    )
+    appifier.appify()
 
-    # Bundle the python wrapper
-    wrapper = APPDIR_BIN + '/' + PYTHON_X_Y
-    if not os.path.exists(wrapper):
-        log('INSTALL', '%s wrapper', PYTHON_X_Y)
-        entrypoint_path = PREFIX + '/data/entrypoint.sh'
-        entrypoint = load_template(entrypoint_path, python=PYTHON_X_Y)
-        dictionary = {'entrypoint': entrypoint,
-                      'shebang': '#! /bin/bash',
-                      'tcltk-env': tcltk_env_string(PYTHON_PKG),
-                      'cert-file': cert_file_env_string(cert_file)}
-        _copy_template('python-wrapper.sh', wrapper, **dictionary)
 
-    # Set or update symlinks to python
-    pythons = glob.glob(APPDIR_BIN + '/python?.*')
-    versions = [os.path.basename(python)[6:] for python in pythons]
-    latest2, latest3 = '0.0', '0.0'
-    for version in versions:
-        if version.startswith('2') and version >= latest2:
-            latest2 = version
-        elif version.startswith('3') and version >= latest3:
-            latest3 = version
-    if latest2 == VERSION:
-        python2 = APPDIR_BIN + '/python2'
-        remove_file(python2)
-        os.symlink(PYTHON_X_Y, python2)
-        has_pip = os.path.exists(APPDIR_BIN + '/' + PIP_X_Y)
-        if has_pip:
-            pip2 = APPDIR_BIN + '/pip2'
-            remove_file(pip2)
-            os.symlink(PIP_X_Y, pip2)
-        if latest3 == '0.0':
-            log('SYMLINK', 'python, python2 to ' + PYTHON_X_Y)
-            python = APPDIR_BIN + '/python'
-            remove_file(python)
-            os.symlink('python2', python)
-            if has_pip:
-                log('SYMLINK', 'pip, pip2 to ' + PIP_X_Y)
-                pip = APPDIR_BIN + '/pip'
-                remove_file(pip)
-                os.symlink('pip2', pip)
+def _get_tk_version(python_pkg):
+    tkinter = glob.glob(python_pkg + '/lib-dynload/_tkinter*.so')
+    if tkinter:
+        tkinter = tkinter[0]
+        for dep in ldd(tkinter):
+            name = os.path.basename(dep)
+            if name.startswith('libtk'):
+                match = re.search('libtk([0-9]+[.][0-9]+)', name)
+                return match.group(1)
         else:
-            log('SYMLINK', 'python2 to ' + PYTHON_X_Y)
-            if has_pip:
-                log('SYMLINK', 'pip2 to ' + PIP_X_Y)
-    elif latest3 == VERSION:
-        log('SYMLINK', 'python, python3 to ' + PYTHON_X_Y)
-        python3 = APPDIR_BIN + '/python3'
-        remove_file(python3)
-        os.symlink(PYTHON_X_Y, python3)
-        python = APPDIR_BIN + '/python'
-        remove_file(python)
-        os.symlink('python3', python)
-        if os.path.exists(APPDIR_BIN + '/' + PIP_X_Y):
-            log('SYMLINK', 'pip, pip3 to ' + PIP_X_Y)
-            pip3 = APPDIR_BIN + '/pip3'
-            remove_file(pip3)
-            os.symlink(PIP_X_Y, pip3)
-            pip = APPDIR_BIN + '/pip'
-            remove_file(pip)
-            os.symlink('pip3', pip)
-
-    # Bundle the entry point
-    apprun = APPDIR + '/AppRun'
-    if not os.path.exists(apprun):
-        log('INSTALL', 'AppRun')
-
-        relpath = os.path.relpath(wrapper, APPDIR)
-        os.symlink(relpath, APPDIR + '/AppRun')
-
-    # Bundle the desktop file
-    desktop_name = 'python{:}.desktop'.format(FULLVERSION)
-    desktop = os.path.join(APPDIR, desktop_name)
-    if not os.path.exists(desktop):
-        log('INSTALL', desktop_name)
-        apps = 'usr/share/applications'
-        appfile = '{:}/{:}/python{:}.desktop'.format(APPDIR, apps, FULLVERSION)
-        if not os.path.exists(appfile):
-            make_tree(os.path.join(APPDIR, apps))
-            _copy_template('python.desktop', appfile, version=VERSION,
-                                                      fullversion=FULLVERSION)
-        os.symlink(os.path.join(apps, desktop_name), desktop)
+            raise RuntimeError('could not guess Tcl/Tk version')
 
 
-    # Bundle icons
-    icons = 'usr/share/icons/hicolor/256x256/apps'
-    icon = os.path.join(APPDIR, 'python.png')
-    if not os.path.exists(icon):
-        log('INSTALL', 'python.png')
-        make_tree(os.path.join(APPDIR, icons))
-        copy_file(PREFIX + '/data/python.png',
-                  os.path.join(APPDIR, icons, 'python.png'))
-        os.symlink(os.path.join(icons, 'python.png'), icon)
+def _get_tk_libdir(version):
+    try:
+        library = system(('tclsh' + version,), stdin='puts [info library]')
+    except SystemError:
+        raise RuntimeError('could not locate Tcl/Tk' + version + ' library')
 
-    diricon = os.path.join(APPDIR, '.DirIcon')
-    if not os.path.exists(diricon):
-        os.symlink('python.png', diricon)
-
-
-    # Bundle metadata
-    meta_name = 'python{:}.appdata.xml'.format(FULLVERSION)
-    meta_dir = os.path.join(APPDIR, 'usr/share/metainfo')
-    meta_file = os.path.join(meta_dir, meta_name)
-    if not os.path.exists(meta_file):
-        log('INSTALL', meta_name)
-        make_tree(meta_dir)
-        _copy_template('python.appdata.xml', meta_file, version=VERSION,
-                                                        fullversion=FULLVERSION)
+    return os.path.dirname(library)

@@ -12,6 +12,7 @@ import subprocess
 from typing import Dict, List, NamedTuple, Optional, Union
 
 from .config import Arch, PythonImpl, PythonVersion
+from ..appimage import Appifier
 from ..utils.deps import ensure_excludelist, ensure_patchelf, EXCLUDELIST, \
                          PATCHELF
 from ..utils.log import debug, log
@@ -117,18 +118,20 @@ class PythonExtractor:
         self,
         destination: Path,
         *,
+        appify: Optional[bool]=False,
         python_prefix: Optional[str]=None,
-        system_prefix: Optional[str]=None
+        system_prefix: Optional[str]=None,
         ):
         '''Extract Python runtime.'''
 
         python = f'python{self.version.short()}'
-        runtime = f'bin/{python}'
-        packages = f'lib/python{self.version.flavoured()}'
+        flavoured_python = f'python{self.version.flavoured()}'
+        runtime = f'bin/{flavoured_python}'
+        packages = f'lib/{flavoured_python}'
         pip = f'bin/pip{self.version.short()}'
 
         if python_prefix is None:
-            python_prefix = f'opt/python{self.version.flavoured()}'
+            python_prefix = f'opt/{flavoured_python}'
 
         if system_prefix is None:
             system_prefix = 'usr'
@@ -152,7 +155,7 @@ class PythonExtractor:
 
         short = Path(python_dest / f'bin/python{self.version.major}')
         short.unlink(missing_ok=True)
-        short.symlink_to(python)
+        short.symlink_to(flavoured_python)
         short = Path(python_dest / 'bin/python')
         short.unlink(missing_ok=True)
         short.symlink_to(f'python{self.version.major}')
@@ -166,7 +169,7 @@ class PythonExtractor:
             f.write('#! /bin/sh\n')
             f.write(' '.join((
                 '"exec"',
-                f'"$(dirname $(readlink -f ${0}))/{python}"',
+                f'"$(dirname $(readlink -f ${0}))/{flavoured_python}"',
                 '"$0"',
                 '"$@"\n'
             )))
@@ -198,7 +201,7 @@ class PythonExtractor:
                     (root / f).unlink()
 
         # Map binary dependencies.
-        libs = self.ldd(self.python_prefix / f'bin/{python}')
+        libs = self.ldd(self.python_prefix / f'bin/{flavoured_python}')
         path = Path(self.python_prefix / f'{packages}/lib-dynload')
         for module in glob.glob(str(path / "*.so")):
             l = self.ldd(module)
@@ -249,6 +252,9 @@ class PythonExtractor:
                 dst = python_dest / f'{packages}/site-packages/{src.name}'
                 if not dst.exists():
                     shutil.copytree(src, dst, symlinks=True)
+
+            cert_src = dst / 'cacert.pem'
+            assert(cert_src.exists())
         else:
             raise NotImplementedError()
 
@@ -271,6 +277,18 @@ class PythonExtractor:
             src = tcltk_src / name
             dst = tcltk_dir / name
             shutil.copytree(src, dst, symlinks=True, dirs_exist_ok=True)
+
+        if appify:
+            appifier = Appifier(
+                appdir = str(destination),
+                appdir_bin = str(system_dest / 'bin'),
+                python_bin = str(python_dest / 'bin'),
+                python_pkg = str(python_dest / packages),
+                version = self.version,
+                tk_version = tx_version,
+                cert_src = cert_src
+            )
+            appifier.appify()
 
 
     def ldd(self, target: Path) -> Dict[str, Path]:
