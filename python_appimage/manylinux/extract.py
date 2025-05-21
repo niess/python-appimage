@@ -153,13 +153,6 @@ class PythonExtractor:
         (python_dest / 'bin').mkdir(exist_ok=True, parents=True)
         shutil.copy(self.python_prefix / runtime, python_dest / runtime)
 
-        short = Path(python_dest / f'bin/python{self.version.major}')
-        short.unlink(missing_ok=True)
-        short.symlink_to(flavoured_python)
-        short = Path(python_dest / 'bin/python')
-        short.unlink(missing_ok=True)
-        short.symlink_to(f'python{self.version.major}')
-
         # Clone pip wrapper.
         with open(self.python_prefix / pip) as f:
             f.readline() # Skip shebang.
@@ -175,13 +168,6 @@ class PythonExtractor:
             )))
             f.write(body)
         shutil.copymode(self.python_prefix / pip, python_dest / pip)
-
-        short = Path(python_dest / f'bin/pip{self.version.major}')
-        short.unlink(missing_ok=True)
-        short.symlink_to(f'pip{self.version.short()}')
-        short = Path(python_dest / 'bin/pip')
-        short.unlink(missing_ok=True)
-        short.symlink_to(f'pip{self.version.major}')
 
         # Clone Python packages.
         for folder in (packages, include):
