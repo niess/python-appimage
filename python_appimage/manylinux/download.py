@@ -117,8 +117,8 @@ class Downloader:
         with tempfile.TemporaryDirectory() as tmpdir:
             workdir = Path(tmpdir)
             for i, hash_ in enumerate(missing):
-                log('DOWNLOAD', f'{self.image} ({tag}) '
-                                f'[{i + 1} / {len(missing)}]')
+                debug('DOWNLOAD', f'{self.image}:{tag} '
+                                  f'[{i + 1} / {len(missing)}]')
 
                 filename = f'{hash_}.tar.gz'
                 url = f'https://quay.io/v2/{repository}/blobs/sha256:{hash_}'

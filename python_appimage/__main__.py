@@ -34,15 +34,30 @@ def main():
     parser.add_argument('-v', '--verbose', help='print extra information',
         dest='verbosity', action='store_const', const='DEBUG')
 
-    install_parser = subparsers.add_parser('install',
-        description='Install binary dependencies')
-    install_parser.add_argument('binary', nargs='+',
-        choices=binaries, help='one or more binary name')
-
     build_parser = subparsers.add_parser('build',
         description='Build a Python appimage')
     build_subparsers = build_parser.add_subparsers(title='type',
         help='Type of AppImage build', dest='sub_command')
+
+    cache_parser = subparsers.add_parser('cache',
+        description='Manage Python appimage cache')
+    cache_subparsers = cache_parser.add_subparsers(title='operation',
+        help='Type of cache operation', dest='sub_command')
+
+    cache_clean_parser = cache_subparsers.add_parser('clean',
+        description='Clean cached image(s)')
+    cache_clean_parser.add_argument('tags', nargs='*',
+        help='manylinux image tag(s) (e.g. 2014_x86_64)')
+    cache_clean_parser.add_argument('-a', '--all', action='store_true',
+        help='remove all image(s) data')
+
+    cache_list_parser = cache_subparsers.add_parser('list',
+        description='List cached image(s)')
+
+    install_parser = subparsers.add_parser('install',
+        description='Install binary dependencies')
+    install_parser.add_argument('binary', nargs='+',
+        choices=binaries, help='one or more binary name')
 
     build_local_parser = build_subparsers.add_parser('local',
         description='Bundle a local Python installation')
