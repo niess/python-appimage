@@ -346,6 +346,8 @@ class ImageExtractor:
                 shutil.rmtree(destination, ignore_errors=True)
             atexit.register(cleanup, destination)
 
+        log('EXTRACT', f'{self.prefix.name}:{self.tag}')
+
         with open(self.prefix / f'tags/{self.tag}.json') as f:
             meta = json.load(f)
         layers = meta['layers']

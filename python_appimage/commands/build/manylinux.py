@@ -3,8 +3,7 @@ from pathlib import Path
 import shutil
 
 from ...appimage import build_appimage
-from ...manylinux import Arch, Downloader, ImageExtractor, LinuxTag, \
-                         PythonExtractor
+from ...manylinux import ensure_image, PythonExtractor
 from ...utils.tmp import TemporaryDirectory
 
 
@@ -21,21 +20,13 @@ def execute(tag, abi):
     '''Build a Python AppImage using a Manylinux image
     '''
 
-    tag, arch = tag.split('_', 1)
-    tag = LinuxTag.from_brief(tag)
-    arch = Arch.from_str(arch)
-
-    downloader = Downloader(tag=tag, arch=arch)
-    downloader.download()
-
-    image_extractor = ImageExtractor(downloader.default_destination())
-    image_extractor.extract()
+    image = ensure_image(tag)
 
     pwd = os.getcwd()
     with TemporaryDirectory() as tmpdir:
         python_extractor = PythonExtractor(
-            arch = arch,
-            prefix = image_extractor.default_destination(),
+            arch = image.arch,
+            prefix = image.path,
             tag = abi
         )
         appdir = Path(tmpdir) / 'AppDir'
@@ -44,7 +35,7 @@ def execute(tag, abi):
         fullname = '-'.join((
             f'{python_extractor.impl}{python_extractor.version.long()}',
             abi,
-            f'{tag}_{arch}'
+            f'{image.tag}_{image.arch}'
         ))
 
         destination = f'{fullname}.AppImage'
@@ -52,7 +43,7 @@ def execute(tag, abi):
             appdir = str(appdir),
             destination = destination
         )
-        shutil.move(
+        shutil.copy(
             Path(tmpdir) / destination,
             Path(pwd) / destination
         )

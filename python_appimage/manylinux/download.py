@@ -22,10 +22,6 @@ class DownloadError(Exception):
     pass
 
 
-class TarError(Exception):
-    pass
-
-
 @dataclass(frozen=True)
 class Downloader:
 
@@ -68,6 +64,7 @@ class Downloader:
 
         # Authenticate to quay.io.
         repository = f'pypa/{self.image}'
+        log('PULL', f'{self.image}:{tag}')
         url = 'https://quay.io/v2/auth'
         url = f'{url}?service=quay.io&scope=repository:{repository}:pull'
         debug('GET', url)

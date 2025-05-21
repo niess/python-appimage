@@ -162,7 +162,7 @@ assert_eq(expected, sys.prefix)
 
         # Test SSL (see issue #24).
         if version.major > 2:
-            Script(f'''
+            Script('''
 from http import HTTPStatus
 import urllib.request
 with urllib.request.urlopen('https://wikipedia.org') as r:
