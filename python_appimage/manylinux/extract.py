@@ -77,9 +77,17 @@ class PythonExtractor:
         if self.arch in (Arch.AARCH64, Arch.X86_64):
             paths.append(self.prefix / 'lib64')
             paths.append(self.prefix / 'usr/lib64')
+            if self.arch == Arch.X86_64:
+                paths.append(self.prefix / 'lib/x86_64-linux-gnu')
+                paths.append(self.prefix / 'usr/lib/x86_64-linux-gnu')
+            else:
+                paths.append(self.prefix / 'lib/aarch64-linux-gnu')
+                paths.append(self.prefix / 'usr/lib/aarch64-linux-gnu')
         elif self.arch == Arch.I686:
             paths.append(self.prefix / 'lib')
             paths.append(self.prefix / 'usr/lib')
+            paths.append(self.prefix / 'lib/i386-linux-gnu')
+            paths.append(self.prefix / 'usr/lib/i386-linux-gnu')
         else:
             raise NotImplementedError()
         paths.append(self.prefix / 'usr/local/lib')
@@ -100,12 +108,13 @@ class PythonExtractor:
         else:
             ensure_excludelist()
             excludelist = Path(EXCLUDELIST)
-        excluded = []
+        excluded = set()
         with excludelist.open() as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#'):
-                    excluded.append(line)
+                    excluded.add(line)
+        excluded.add('ld-linux-aarch64.so.1')  # patch for aarch64.
         object.__setattr__(self, 'excluded', excluded)
 
         # Set patchelf, if not provided.
@@ -248,24 +257,31 @@ class PythonExtractor:
 
         # Copy Tcl & Tk data.
         tx_version = []
-        for location in ('usr/local/lib', 'usr/share'):
-            tcltk_src = self.prefix / location
-            for match in glob.glob(str(tcltk_src / 'tk*')):
-                path = Path(match)
-                if path.is_dir():
-                    tx_version.append(LooseVersion(path.name[2:]))
-        tx_version.sort()
-        tx_version = tx_version[-1]
+        for match in glob.glob(str(system_dest / 'lib/libtk*')):
+            path = system_dest / f'lib/{match}'
+            tx_version.append(LooseVersion(path.name[5:8]))
 
-        log('INSTALL', f'Tcl/Tk{tx_version}')
-        tcltk_dir = Path(system_dest / 'share/tcltk')
-        tcltk_dir.mkdir(exist_ok=True, parents=True)
+        if tx_version:
+            tx_version.sort()
+            tx_version = tx_version[-1]
 
-        for tx in ('tcl', 'tk'):
-            name = f'{tx}{tx_version}'
-            src = tcltk_src / name
-            dst = tcltk_dir / name
-            shutil.copytree(src, dst, symlinks=True, dirs_exist_ok=True)
+            for location in ('usr/local/lib', 'usr/share', 'usr/share/tcltk'):
+                tcltk_src = self.prefix / location
+                path = tcltk_src / f'tk{tx_version}'
+                if path.exists() and path.is_dir():
+                    break
+            else:
+                raise ValueError(f'could not locate Tcl/Tk{tx_version}')
+
+            log('INSTALL', f'Tcl/Tk{tx_version}')
+            tcltk_dir = Path(system_dest / 'share/tcltk')
+            tcltk_dir.mkdir(exist_ok=True, parents=True)
+
+            for tx in ('tcl', 'tk'):
+                name = f'{tx}{tx_version}'
+                src = tcltk_src / name
+                dst = tcltk_dir / name
+                shutil.copytree(src, dst, symlinks=True, dirs_exist_ok=True)
 
         if appify:
             appifier = Appifier(

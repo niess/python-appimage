@@ -29,7 +29,7 @@ class Patcher:
             patch = f'tk-manylinux1_{self.arch}'
             log('PATCH', patch)
             tarfile = f'{patch}.tar.gz'
-            path = cache / patch
+            path = cache / tarfile
             if not path.exists():
                 url = f'https://github.com/niess/python-appimage/releases/download/manylinux1/{tarfile}'
                 urlretrieve(url, path)
@@ -40,7 +40,7 @@ class Patcher:
             cmd = ''.join((
                  f'trap \'chmod u+rw -R {destination}\' EXIT ; ',
                  f'mkdir -p {destination} && ',
-                 f'tar -xzf {tarfile} -C {destination}',
+                 f'tar -xzf {path} -C {destination}',
             ))
             r = subprocess.run(f'/bin/bash -c "{cmd}"', shell=True,
                                capture_output=True)

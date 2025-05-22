@@ -18,7 +18,11 @@ def ensure_image(tag, *, clean=False, extract=True):
     except ValueError:
         image_tag = 'latest'
 
-    tag, arch = tag.split('_', 1)
+    if tag.startswith('2_'):
+        tag, arch = tag[2:].split('_', 1)
+        tag = f'2_{tag}'
+    else:
+        tag, arch = tag.split('_', 1)
     tag = LinuxTag.from_brief(tag)
     arch = Arch.from_str(arch)
 

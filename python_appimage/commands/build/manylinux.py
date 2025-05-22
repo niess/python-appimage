@@ -18,7 +18,7 @@ def _unpack_args(args):
     return args.tag, args.abi, args.bare, args.clean, args.no_packaging
 
 
-def execute(tag, abi, bare, clean, no_packaging):
+def execute(tag, abi, bare=False, clean=False, no_packaging=False):
     '''Build a Python AppImage using a Manylinux image
     '''
 
@@ -48,7 +48,7 @@ def execute(tag, abi, bare, clean, no_packaging):
             )
         elif bare:
             log('COMPRESS', fullname)
-            destination = f'{fullname}.tgz'
+            destination = f'{fullname}.tar.gz'
             tar_path = Path(tmpdir) / destination
             with tarfile.open(tar_path, "w:gz") as tar:
                 tar.add(appdir, arcname=fullname)

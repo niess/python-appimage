@@ -16,9 +16,9 @@ from python_appimage.utils.manylinux import format_appimage_name, format_tag
 
 
 # Build matrix
-ARCHS = ('x86_64', 'i686')
+ARCHS = ('x86_64', 'i686', 'aarch64')
 MANYLINUSES = ('1', '2010', '2014', '2_24', '2_28')
-EXCLUDES = ('2_28_i686',)
+EXCLUDES = ('2_28_i686', '1_aarch64', '2010_aarch64')
 
 # Build directory for AppImages
 APPIMAGES_DIR = 'build-appimages'
@@ -202,7 +202,8 @@ def update(args):
         if new_assets:
             log('DRY', f'new update summary with {len(new_assets)} entries')
 
-        return
+        if not args.build:
+            return
 
     if new_assets:
         # Build new AppImage(s)
@@ -214,6 +215,9 @@ def update(args):
                 build_manylinux(meta.tag, meta.abi)
         finally:
             os.chdir(cwd)
+
+    if args.dry:
+        return
 
     # Create any new release(s).
     for tag in new_releases:
@@ -302,6 +306,11 @@ if __name__ == '__main__':
     )
     parser.add_argument('-a', '--all',
         help = 'force update of all available releases',
+        action = 'store_true',
+        default = False
+    )
+    parser.add_argument('-b', '--build',
+        help = 'build AppImages (in dry mode)',
         action = 'store_true',
         default = False
     )

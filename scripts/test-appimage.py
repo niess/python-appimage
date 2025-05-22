@@ -81,7 +81,10 @@ import os
 appdir = os.environ['APPDIR']
 env = {}
 for var in ('SSL_CERT_FILE', 'TCL_LIBRARY', 'TK_LIBRARY', 'TKPATH'):
-    env[var] = os.environ[var].replace(appdir, '$APPDIR')
+    try:
+        env[var] = os.environ[var].replace(appdir, '$APPDIR')
+    except KeyError:
+        pass
 print(env)
         ''').run(appimage))
 
@@ -149,7 +152,11 @@ print(env)
             content
         )
         content = self.list_content(f'{prefix}/include')
-        assert_eq([f'python{self.version.flavoured()}'], content)
+        if (self.version.major == 3) and (self.version.minor <= 7):
+            expected = [f'python{self.version.short()}m']
+        else:
+            expected = [f'python{self.version.flavoured()}']
+        assert_eq(expected, content)
         content = self.list_content(f'{prefix}/lib')
         assert_eq([f'python{self.version.flavoured()}'], content)
         return Status.SUCCESS
@@ -171,10 +178,13 @@ print(env)
     def test_tcltk_bundling(self):
         '''Check Tcl/Tk bundling'''
 
-        for var in ('TCL_LIBRARY', 'TK_LIBRARY', 'TKPATH'):
-            path = Path(self.env[var].replace('$APPDIR', str(self.appdir)))
-            assert path.exists()
-        return Status.SUCCESS
+        if 'TK_LIBRARY' not in self.env:
+            return Status.SKIPPED
+        else:
+            for var in ('TCL_LIBRARY', 'TK_LIBRARY', 'TKPATH'):
+                path = Path(self.env[var].replace('$APPDIR', str(self.appdir)))
+                assert path.exists()
+            return Status.SUCCESS
 
     def test_ssl_bundling(self):
         '''Check SSL certs bundling'''
@@ -262,6 +272,7 @@ with urllib.request.urlopen('https://wikipedia.org') as r:
 
         try:
             os.environ['DISPLAY']
+            self.env['TK_LIBRARY']
         except KeyError:
             return Status.SKIPPED
         else:
