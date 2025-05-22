@@ -335,16 +335,16 @@ class ImageExtractor:
         return self.prefix / f'extracted/{self.tag}'
 
 
-    def extract(self, destination: Optional[Path]=None, *, cleanup=False):
+    def extract(self, destination: Optional[Path]=None, *, clean=False):
         '''Extract Manylinux image.'''
 
         if destination is None:
             destination = self.default_destination()
 
-        if cleanup:
-            def cleanup(destination):
+        if clean:
+            def clean(destination):
                 shutil.rmtree(destination, ignore_errors=True)
-            atexit.register(cleanup, destination)
+            atexit.register(clean, destination)
 
         log('EXTRACT', f'{self.prefix.name}:{self.tag}')
 

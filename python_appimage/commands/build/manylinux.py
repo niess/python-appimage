@@ -13,14 +13,14 @@ __all__ = ['execute']
 def _unpack_args(args):
     '''Unpack command line arguments
     '''
-    return args.tag, args.abi
+    return args.tag, args.abi, args.clean
 
 
-def execute(tag, abi):
+def execute(tag, abi, clean):
     '''Build a Python AppImage using a Manylinux image
     '''
 
-    image = ensure_image(tag)
+    image = ensure_image(tag, clean=clean)
 
     pwd = os.getcwd()
     with TemporaryDirectory() as tmpdir:

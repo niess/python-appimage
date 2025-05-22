@@ -9,8 +9,8 @@ __all__ = ['Arch', 'Downloader', 'ensure_image', 'ImageExtractor', 'LinuxTag',
            'PythonExtractor', 'PythonImpl', 'PythonVersion']
 
 
-def ensure_image(tag):
-    '''Extract a manylinux image to the cache'''
+def ensure_image(tag, *, clean=False, extract=True):
+    '''Download a manylinux image to the cache'''
 
     try:
         tag, image_tag = tag.rsplit(':', 1)
@@ -24,14 +24,21 @@ def ensure_image(tag):
     downloader = Downloader(tag=tag, arch=arch)
     downloader.download(tag=image_tag)
 
-    image_extractor = ImageExtractor(
-        prefix = downloader.default_destination(),
-        tag = image_tag
-    )
-    image_extractor.extract()
+    if extract:
+        image_extractor = ImageExtractor(
+            prefix = downloader.default_destination(),
+            tag = image_tag
+        )
+        image_extractor.extract(clean=clean)
 
-    return SimpleNamespace(
-        arch = arch,
-        tag = tag,
-        path = image_extractor.default_destination(),
-    )
+        return SimpleNamespace(
+            arch = arch,
+            tag = tag,
+            path = image_extractor.default_destination(),
+        )
+    else:
+        return SimpleNamespace(
+            arch = arch,
+            tag = tag,
+            path = downloader.default_destination(),
+        )

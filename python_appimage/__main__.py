@@ -51,6 +51,13 @@ def main():
     cache_clean_parser.add_argument('-a', '--all', action='store_true',
         help='remove all image(s) data')
 
+    cache_get_parser = cache_subparsers.add_parser('get',
+        description='Download image(s) to the cache')
+    cache_get_parser.add_argument('tags', nargs='+',
+        help='manylinux image tag(s) (e.g. 2014_x86_64)')
+    cache_get_parser.add_argument('-e', '--extract', action='store_true',
+        help='extract compressed image data')
+
     cache_list_parser = cache_subparsers.add_parser('list',
         description='List cached image(s)')
 
@@ -66,11 +73,13 @@ def main():
     build_local_parser.add_argument('-p', '--python', help='python executable')
 
     build_manylinux_parser = build_subparsers.add_parser('manylinux',
-        description='Bundle a manylinux Python installation using docker')
+        description='Bundle a manylinux Python installation')
     build_manylinux_parser.add_argument('tag',
         help='manylinux image tag (e.g. 2010_x86_64)')
     build_manylinux_parser.add_argument('abi',
         help='python ABI (e.g. cp37-cp37m)')
+    build_manylinux_parser.add_argument('-c', '--clean',
+        help='compress the image after extraction', action='store_true')
 
     build_app_parser = build_subparsers.add_parser('app',
         description='Build a Python application using a base AppImage')
