@@ -79,7 +79,9 @@ def main():
     build_manylinux_parser.add_argument('abi',
         help='python ABI (e.g. cp37-cp37m)')
     build_manylinux_parser.add_argument('-c', '--clean',
-        help='compress the image after extraction', action='store_true')
+        help='clean the cache after extraction', action='store_true')
+    build_manylinux_parser.add_argument('-t', '--tarball',
+        help='build a bare tarball instead of an AppImage', action='store_true')
 
     build_app_parser = build_subparsers.add_parser('app',
         description='Build a Python application using a base AppImage')
