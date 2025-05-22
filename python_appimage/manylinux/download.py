@@ -56,6 +56,7 @@ class Downloader:
     def download(
         self,
         destination: Optional[Path]=None,
+        *,
         tag: Optional[str] = 'latest'
         ):
         '''Download Manylinux image'''

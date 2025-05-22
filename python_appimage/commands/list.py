@@ -27,7 +27,8 @@ def execute(tag):
         pythons.append((path.name, version))
     pythons = sorted(pythons)
 
+    n = max(len(version) for (_, version) in pythons)
     for (abi, version) in pythons:
-        log('LIST', "{:8} ->  /opt/python/{:}".format(version, abi))
+        log('LIST', "{:{n}}  ->  /opt/python/{:}".format(version, abi, n=n))
 
     return pythons
