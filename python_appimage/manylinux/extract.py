@@ -247,12 +247,13 @@ class PythonExtractor:
             raise NotImplementedError()
 
         # Copy Tcl & Tk data.
-        tcltk_src = self.prefix / 'usr/local/lib'
         tx_version = []
-        for match in glob.glob(str(tcltk_src / 'tk*')):
-            path = Path(match)
-            if path.is_dir():
-                tx_version.append(LooseVersion(path.name[2:]))
+        for location in ('usr/local/lib', 'usr/share'):
+            tcltk_src = self.prefix / location
+            for match in glob.glob(str(tcltk_src / 'tk*')):
+                path = Path(match)
+                if path.is_dir():
+                    tx_version.append(LooseVersion(path.name[2:]))
         tx_version.sort()
         tx_version = tx_version[-1]
 

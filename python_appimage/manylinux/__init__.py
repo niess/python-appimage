@@ -3,10 +3,11 @@ from types import SimpleNamespace
 from .config import Arch, LinuxTag, PythonImpl, PythonVersion
 from .download import Downloader
 from .extract import ImageExtractor, PythonExtractor
+from .patch import Patcher
 
 
 __all__ = ['Arch', 'Downloader', 'ensure_image', 'ImageExtractor', 'LinuxTag',
-           'PythonExtractor', 'PythonImpl', 'PythonVersion']
+           'Patcher', 'PythonExtractor', 'PythonImpl', 'PythonVersion']
 
 
 def ensure_image(tag, *, clean=False, extract=True):
@@ -30,6 +31,9 @@ def ensure_image(tag, *, clean=False, extract=True):
             tag = image_tag
         )
         image_extractor.extract(clean=clean)
+
+        patcher = Patcher(tag=tag, arch=arch)
+        patcher.patch(destination = image_extractor.default_destination())
 
         return SimpleNamespace(
             arch = arch,
