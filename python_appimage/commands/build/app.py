@@ -1,9 +1,9 @@
 import json
 import glob
 import os
+from pathlib import Path
 import platform
 import re
-import shutil
 import stat
 import struct
 
@@ -27,7 +27,7 @@ def _unpack_args(args):
     '''
     return args.appdir, args.name, args.python_version, args.linux_tag,        \
            args.python_tag, args.base_image, args.in_tree_build,               \
-           args.extra_data
+           args.extra_data, args.no_packaging
 
 
 _tag_pattern = re.compile('python([^-]+)[-]([^.]+)[.]AppImage')
@@ -36,7 +36,7 @@ _linux_pattern = re.compile('manylinux([0-9]+)_' + platform.machine())
 
 def execute(appdir, name=None, python_version=None, linux_tag=None,
             python_tag=None, base_image=None, in_tree_build=False,
-            extra_data=None):
+            extra_data=None, no_packaging=None):
     '''Build a Python application using a base AppImage
     '''
 
@@ -321,7 +321,10 @@ def execute(appdir, name=None, python_version=None, linux_tag=None,
 
 
         # Build the new AppImage
-        destination = '{:}-{:}.AppImage'.format(application_name,
-                                                platform.machine())
-        build_appimage(destination=destination)
-        shutil.move(destination, os.path.join(pwd, destination))
+        fullname = '{:}-{:}'.format(application_name, platform.machine())
+        if no_packaging:
+            copy_tree('AppDir', Path(pwd) / fullname)
+        else:
+            destination = f'{fullname}.AppImage'
+            build_appimage(destination=destination)
+            copy_file(destination, os.path.join(pwd, destination))

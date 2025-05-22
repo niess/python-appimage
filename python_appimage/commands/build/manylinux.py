@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 import tarfile
-import shutil
 
 from ...appimage import build_appimage
 from ...manylinux import ensure_image, PythonExtractor
+from ...utils.fs import copy_file, copy_tree
 from ...utils.log import log
 from ...utils.tmp import TemporaryDirectory
 
@@ -15,10 +15,10 @@ __all__ = ['execute']
 def _unpack_args(args):
     '''Unpack command line arguments
     '''
-    return args.tag, args.abi, args.clean, args.tarball
+    return args.tag, args.abi, args.bare, args.clean, args.no_packaging
 
 
-def execute(tag, abi, clean, tarball):
+def execute(tag, abi, bare, clean, no_packaging):
     '''Build a Python AppImage using a Manylinux image
     '''
 
@@ -32,7 +32,7 @@ def execute(tag, abi, clean, tarball):
             tag = abi
         )
         appdir = Path(tmpdir) / 'AppDir'
-        appify = not tarball
+        appify = not bare
         python_extractor.extract(appdir, appify=appify)
 
         fullname = '-'.join((
@@ -41,13 +41,18 @@ def execute(tag, abi, clean, tarball):
             f'{image.tag}_{image.arch}'
         ))
 
-        if tarball:
+        if no_packaging:
+            copy_tree(
+                Path(tmpdir) / 'AppDir',
+                Path(pwd) / fullname
+            )
+        elif bare:
             log('COMPRESS', fullname)
             destination = f'{fullname}.tgz'
             tar_path = Path(tmpdir) / destination
             with tarfile.open(tar_path, "w:gz") as tar:
                 tar.add(appdir, arcname=fullname)
-            shutil.copy(
+            copy_file(
                 tar_path,
                 Path(pwd) / destination
             )
@@ -58,7 +63,7 @@ def execute(tag, abi, clean, tarball):
                 arch = str(image.arch),
                 destination = destination
             )
-            shutil.copy(
+            copy_file(
                 Path(tmpdir) / destination,
                 Path(pwd) / destination
             )

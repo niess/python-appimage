@@ -78,10 +78,13 @@ def main():
         help='manylinux image tag (e.g. 2010_x86_64)')
     build_manylinux_parser.add_argument('abi',
         help='python ABI (e.g. cp37-cp37m)')
+    build_manylinux_parser.add_argument('-b', '--bare',
+        help='produce a bare image without the AppImage layer',
+        action='store_true')
     build_manylinux_parser.add_argument('-c', '--clean',
         help='clean the cache after extraction', action='store_true')
-    build_manylinux_parser.add_argument('-t', '--tarball',
-        help='build a bare tarball instead of an AppImage', action='store_true')
+    build_manylinux_parser.add_argument('-n', '--no-packaging',
+        help='do not package (compress) the image', action='store_true')
 
     build_app_parser = build_subparsers.add_parser('app',
         description='Build a Python application using a base AppImage')
@@ -93,6 +96,8 @@ def main():
         help='linux compatibility tag (e.g. manylinux1_x86_64)')
     build_app_parser.add_argument('-n', '--name',
         help='application name')
+    build_app_parser.add_argument('--no-packaging',
+        help='do not package the app', action='store_true')
     build_app_parser.add_argument('--python-tag',
         help='python compatibility tag (e.g. cp37-cp37m)')
     build_app_parser.add_argument('-p', '--python-version',
