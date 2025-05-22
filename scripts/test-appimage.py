@@ -5,7 +5,9 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
+from types import FunctionType
 from typing import NamedTuple
 
 
@@ -49,20 +51,21 @@ def system(cmd):
         return r.stdout.decode()
 
 
-def test():
-    '''Test Python AppImage(s)'''
+class TestContext:
+    '''Context for testing an image'''
 
-    for appimage in ARGS.appimage:
+    def __init__(self, appimage):
+        self.appimage = appimage
 
         # Guess python version from appimage name.
         version, _, abi, *_ = appimage.name.split('-', 3)
         version = version[6:]
         if abi.endswith('t'):
             version += '-nogil'
-        version = PythonVersion.from_str(version)
+        self.version = PythonVersion.from_str(version)
 
         # Get some specific AppImage env variables.
-        env = eval(Script('''
+        self.env = eval(Script('''
 import os
 appdir = os.environ['APPDIR']
 env = {}
@@ -76,121 +79,187 @@ print(env)
         dst = Path(tmpdir.name) / appimage.name
         shutil.copy(appimage, dst)
         system(f'cd {tmpdir.name} && ./{appimage.name} --appimage-extract')
-        appdir = Path(tmpdir.name) / 'squashfs-root'
+        self.appdir = Path(tmpdir.name) / 'squashfs-root'
+        self.tmpdir = tmpdir
 
-        def list_content(path=None):
-            path = appdir if path is None else appdir / path
-            return sorted(os.listdir(path))
+    def list_content(self, path=None):
+        '''List the content of an extracted directory'''
 
-        # Check the appimage root content.
-        content = list_content()
+        path = self.appdir if path is None else self.appdir / path
+        return sorted(os.listdir(path))
+
+    def run(self):
+        '''Run all tests'''
+
+        tests = []
+        for key, value in self.__class__.__dict__.items():
+            if isinstance(value, FunctionType):
+                if key.startswith('test_'):
+                    tests.append(value)
+
+        n = len(tests)
+        m = max(len(test.__doc__) for test in tests)
+        for i, test in enumerate(tests):
+            sys.stdout.write(
+                f'[ {self.appimage.name} | {i + 1:2}/{n} ] {test.__doc__:{m}}'
+            )
+            sys.stdout.flush()
+            try:
+                test(self)
+            except Exception as e:
+                sys.stdout.write(f'  -> FAILED ({test.__name__}){os.linesep}')
+                sys.stdout.flush()
+                raise e
+            else:
+                sys.stdout.write(f'  -> OK{os.linesep}')
+                sys.stdout.flush()
+
+
+    def test_root_content(self):
+        '''Check the appimage root content'''
+
+        content = self.list_content()
         expected = ['.DirIcon', 'AppRun', 'opt', 'python.png',
-                    f'python{version.long()}.desktop', 'usr']
+                    f'python{self.version.long()}.desktop', 'usr']
         assert_eq(expected, content)
 
-        # Check the appimage python content.
-        prefix = f'opt/python{version.flavoured()}'
-        content = list_content(prefix)
+    def test_python_content(self):
+        '''Check the appimage python content'''
+
+        prefix = f'opt/python{self.version.flavoured()}'
+        content = self.list_content(prefix)
         assert_eq(['bin', 'include', 'lib'], content)
-        content = list_content(f'{prefix}/bin')
+        content = self.list_content(f'{prefix}/bin')
         assert_eq(
-            [f'pip{version.short()}', f'python{version.flavoured()}'],
+            [f'pip{self.version.short()}', f'python{self.version.flavoured()}'],
             content
         )
-        content = list_content(f'{prefix}/include')
-        assert_eq([f'python{version.flavoured()}'], content)
-        content = list_content(f'{prefix}/lib')
-        assert_eq([f'python{version.flavoured()}'], content)
+        content = self.list_content(f'{prefix}/include')
+        assert_eq([f'python{self.version.flavoured()}'], content)
+        content = self.list_content(f'{prefix}/lib')
+        assert_eq([f'python{self.version.flavoured()}'], content)
 
-        # Check the appimage system content.
-        content = list_content('usr')
+    def test_system_content(self):
+        '''Check the appimage system content'''
+
+        content = self.list_content('usr')
         assert_eq(['bin', 'lib', 'share'], content)
-        content = list_content('usr/bin')
-        expected = ['pip', f'pip{version.major}', f'pip{version.short()}',
-                    'python', f'python{version.major}',
-                    f'python{version.short()}']
+        content = self.list_content('usr/bin')
+        expected = [
+            'pip', f'pip{self.version.major}', f'pip{self.version.short()}',
+            'python', f'python{self.version.major}',
+            f'python{self.version.short()}'
+        ]
         assert_eq(expected, content)
 
-        # Check Tcl/Tk bundling.
+    def test_tcltk_bundling(self):
+        '''Check Tcl/Tk bundling'''
+
         for var in ('TCL_LIBRARY', 'TK_LIBRARY', 'TKPATH'):
-            assert Path(env[var].replace('$APPDIR', str(appdir))).exists()
+            path = Path(self.env[var].replace('$APPDIR', str(self.appdir)))
+            assert path.exists()
 
-        # Check SSL certs bundling.
+    def test_ssl_bundling(self):
+        '''Check SSL certs bundling'''
+
         var = 'SSL_CERT_FILE'
-        assert Path(env[var].replace('$APPDIR', str(appdir))).exists()
+        path = Path(self.env[var].replace('$APPDIR', str(self.appdir)))
+        assert path.exists()
 
-        # Check /usr/bin symlinks.
+    def test_bin_symlinks(self):
+        '''Check /usr/bin symlinks'''
+
         assert_eq(
-            (appdir /
-             f'opt/python{version.flavoured()}/bin/pip{version.short()}'),
-            (appdir / f'usr/bin/pip{version.short()}').resolve()
+            (self.appdir /
+             f'opt/python{self.version.flavoured()}/bin/pip{self.version.short()}'),
+            (self.appdir / f'usr/bin/pip{self.version.short()}').resolve()
         )
         assert_eq(
-            f'pip{version.short()}',
-            str((appdir / f'usr/bin/pip{version.major}').readlink())
+            f'pip{self.version.short()}',
+            str((self.appdir / f'usr/bin/pip{self.version.major}').readlink())
         )
         assert_eq(
-            f'pip{version.major}',
-            str((appdir / 'usr/bin/pip').readlink())
+            f'pip{self.version.major}',
+            str((self.appdir / 'usr/bin/pip').readlink())
         )
         assert_eq(
-            f'python{version.short()}',
-            str((appdir / f'usr/bin/python{version.major}').readlink())
+            f'python{self.version.short()}',
+            str((self.appdir / f'usr/bin/python{self.version.major}').readlink())
         )
         assert_eq(
-            f'python{version.major}',
-            str((appdir / 'usr/bin/python').readlink())
+            f'python{self.version.major}',
+            str((self.appdir / 'usr/bin/python').readlink())
         )
 
-        # Test the appimage hook.
+    def test_appimage_hook(self):
+        '''Test the appimage hook'''
+
         Script(f'''
 import os
-assert_eq(os.environ['APPIMAGE_COMMAND'], '{appimage}')
+assert_eq(os.environ['APPIMAGE_COMMAND'], '{self.appimage}')
 
 import sys
-assert_eq('{appimage}', sys.executable)
-assert_eq('{appimage}', sys._base_executable)
-        ''').run(appimage)
+assert_eq('{self.appimage}', sys.executable)
+assert_eq('{self.appimage}', sys._base_executable)
+        ''').run(self.appimage)
 
-        # Test the python prefix.
+    def test_python_prefix(self):
+        '''Test the python prefix'''
+
         Script(f'''
 import os
 import sys
-expected = os.environ["APPDIR"] + '/opt/python{version.flavoured()}'
+expected = os.environ["APPDIR"] + '/opt/python{self.version.flavoured()}'
 assert_eq(expected, sys.prefix)
-        ''').run(appimage)
+        ''').run(self.appimage)
 
-        # Test SSL (see issue #24).
-        if version.major > 2:
+    def test_ssl_request(self):
+        '''Test SSL request (see issue #24)'''
+
+        if self.version.major > 2:
             Script('''
 from http import HTTPStatus
 import urllib.request
 with urllib.request.urlopen('https://wikipedia.org') as r:
     assert_eq(r.status, HTTPStatus.OK)
-            ''').run(appimage)
+            ''').run(self.appimage)
 
-        # Test pip installing to an extracted AppImage.
-        r = system(f'{appdir}/AppRun -m pip install pip-install-test')
+    def test_pip_install(self):
+        '''Test pip installing to an extracted AppImage'''
+
+        r = system(f'{self.appdir}/AppRun -m pip install pip-install-test')
         assert('Successfully installed pip-install-test' in r)
-        path = appdir / f'opt/python{version.flavoured()}/lib/python{version.flavoured()}/site-packages/pip_install_test'
+        path = self.appdir / f'opt/python{self.version.flavoured()}/lib/python{self.version.flavoured()}/site-packages/pip_install_test'
         assert(path.exists())
 
-        # Test tkinter (basic).
-        tkinter = 'tkinter' if version.major > 2 else 'Tkinter'
+    def test_tkinter_usage(self):
+        '''Test basic tkinter usage'''
+
+        tkinter = 'tkinter' if self.version.major > 2 else 'Tkinter'
         Script(f'''
 import {tkinter} as tkinter
 tkinter.Tk()
-        ''').run(appimage)
+        ''').run(self.appimage)
 
-        # Test venv.
-        if version.major > 2:
+    def test_venv_usage(self):
+        '''Test venv creation'''
+
+        if self.version.major > 2:
             system(' && '.join((
-                f'cd {tmpdir.name}',
-                f'./{appimage.name} -m venv ENV',
+                f'cd {self.tmpdir.name}',
+                f'./{self.appimage.name} -m venv ENV',
                 '. ENV/bin/activate',
             )))
-            python = Path(f'{tmpdir.name}/ENV/bin/python')
-            assert_eq(appimage.name, str(python.readlink()))
+            python = Path(f'{self.tmpdir.name}/ENV/bin/python')
+            assert_eq(self.appimage.name, str(python.readlink()))
+
+
+def test():
+    '''Test Python AppImage(s)'''
+
+    for appimage in ARGS.appimage:
+        context = TestContext(appimage)
+        context.run()
 
 
 if __name__ == '__main__':
