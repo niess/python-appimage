@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import argparse
+from enum import auto, Enum
 import inspect
 import os
 from pathlib import Path
@@ -38,6 +39,16 @@ class Script(NamedTuple):
                 f.write(os.linesep)
                 f.write(self.content)
             return system(f'{appimage} {script}')
+
+
+class Status(Enum):
+    '''Test exit status'''
+    FAILED = auto()
+    SKIPPED = auto()
+    SUCCESS = auto()
+
+    def __str__(self):
+        return self.name
 
 
 def system(cmd):
@@ -105,13 +116,15 @@ print(env)
             )
             sys.stdout.flush()
             try:
-                test(self)
+                status = test(self)
             except Exception as e:
-                sys.stdout.write(f'  -> FAILED ({test.__name__}){os.linesep}')
+                status = Status.FAILED
+                sys.stdout.write(
+                    f'  ->  {status} ({test.__name__}){os.linesep}')
                 sys.stdout.flush()
                 raise e
             else:
-                sys.stdout.write(f'  -> OK{os.linesep}')
+                sys.stdout.write(f'  ->  {status}{os.linesep}')
                 sys.stdout.flush()
 
 
@@ -122,6 +135,7 @@ print(env)
         expected = ['.DirIcon', 'AppRun', 'opt', 'python.png',
                     f'python{self.version.long()}.desktop', 'usr']
         assert_eq(expected, content)
+        return Status.SUCCESS
 
     def test_python_content(self):
         '''Check the appimage python content'''
@@ -138,6 +152,7 @@ print(env)
         assert_eq([f'python{self.version.flavoured()}'], content)
         content = self.list_content(f'{prefix}/lib')
         assert_eq([f'python{self.version.flavoured()}'], content)
+        return Status.SUCCESS
 
     def test_system_content(self):
         '''Check the appimage system content'''
@@ -151,6 +166,7 @@ print(env)
             f'python{self.version.short()}'
         ]
         assert_eq(expected, content)
+        return Status.SUCCESS
 
     def test_tcltk_bundling(self):
         '''Check Tcl/Tk bundling'''
@@ -158,6 +174,7 @@ print(env)
         for var in ('TCL_LIBRARY', 'TK_LIBRARY', 'TKPATH'):
             path = Path(self.env[var].replace('$APPDIR', str(self.appdir)))
             assert path.exists()
+        return Status.SUCCESS
 
     def test_ssl_bundling(self):
         '''Check SSL certs bundling'''
@@ -165,6 +182,7 @@ print(env)
         var = 'SSL_CERT_FILE'
         path = Path(self.env[var].replace('$APPDIR', str(self.appdir)))
         assert path.exists()
+        return Status.SUCCESS
 
     def test_bin_symlinks(self):
         '''Check /usr/bin symlinks'''
@@ -190,6 +208,7 @@ print(env)
             f'python{self.version.major}',
             str((self.appdir / 'usr/bin/python').readlink())
         )
+        return Status.SUCCESS
 
     def test_appimage_hook(self):
         '''Test the appimage hook'''
@@ -202,6 +221,7 @@ import sys
 assert_eq('{self.appimage}', sys.executable)
 assert_eq('{self.appimage}', sys._base_executable)
         ''').run(self.appimage)
+        return Status.SUCCESS
 
     def test_python_prefix(self):
         '''Test the python prefix'''
@@ -212,17 +232,21 @@ import sys
 expected = os.environ["APPDIR"] + '/opt/python{self.version.flavoured()}'
 assert_eq(expected, sys.prefix)
         ''').run(self.appimage)
+        return Status.SUCCESS
 
     def test_ssl_request(self):
         '''Test SSL request (see issue #24)'''
 
-        if self.version.major > 2:
+        if self.version.major == 2:
+            return Status.SKIPPED
+        else:
             Script('''
 from http import HTTPStatus
 import urllib.request
 with urllib.request.urlopen('https://wikipedia.org') as r:
     assert_eq(r.status, HTTPStatus.OK)
             ''').run(self.appimage)
+        return Status.SUCCESS
 
     def test_pip_install(self):
         '''Test pip installing to an extracted AppImage'''
@@ -231,20 +255,29 @@ with urllib.request.urlopen('https://wikipedia.org') as r:
         assert('Successfully installed pip-install-test' in r)
         path = self.appdir / f'opt/python{self.version.flavoured()}/lib/python{self.version.flavoured()}/site-packages/pip_install_test'
         assert(path.exists())
+        return Status.SUCCESS
 
     def test_tkinter_usage(self):
         '''Test basic tkinter usage'''
 
-        tkinter = 'tkinter' if self.version.major > 2 else 'Tkinter'
-        Script(f'''
-import {tkinter} as tkinter
-tkinter.Tk()
-        ''').run(self.appimage)
+        try:
+            os.environ['DISPLAY']
+        except KeyError:
+            return Status.SKIPPED
+        else:
+            tkinter = 'tkinter' if self.version.major > 2 else 'Tkinter'
+            Script(f'''
+    import {tkinter} as tkinter
+    tkinter.Tk()
+            ''').run(self.appimage)
+            return Status.SUCCESS
 
     def test_venv_usage(self):
         '''Test venv creation'''
 
-        if self.version.major > 2:
+        if self.version.major == 2:
+            return Status.SKIPPED
+        else:
             system(' && '.join((
                 f'cd {self.tmpdir.name}',
                 f'./{self.appimage.name} -m venv ENV',
@@ -252,6 +285,7 @@ tkinter.Tk()
             )))
             python = Path(f'{self.tmpdir.name}/ENV/bin/python')
             assert_eq(self.appimage.name, str(python.readlink()))
+            return Status.SUCCESS
 
 
 def test():

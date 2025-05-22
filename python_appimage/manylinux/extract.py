@@ -76,8 +76,10 @@ class PythonExtractor:
         paths = []
         if self.arch in (Arch.AARCH64, Arch.X86_64):
             paths.append(self.prefix / 'lib64')
+            paths.append(self.prefix / 'usr/lib64')
         elif self.arch == Arch.I686:
             paths.append(self.prefix / 'lib')
+            paths.append(self.prefix / 'usr/lib')
         else:
             raise NotImplementedError()
         paths.append(self.prefix / 'usr/local/lib')
@@ -381,8 +383,10 @@ class ImageExtractor:
             cmd = ''.join((
                  f'trap \'chmod u+rw -R {destination}\' EXIT ; ',
                  f'mkdir -p {destination} && ',
-                 f'tar -xzf {filename} -C {destination} && ',
+                 f'tar -xzf {filename} --exclude=dev -C {destination} && ',
                  f'echo \'{layer}\' >> {extracted_file}'
             ))
-            subprocess.run(f'/bin/bash -c "{cmd}"', shell=True,
-                           check=True, capture_output=True)
+            r = subprocess.run(f'/bin/bash -c "{cmd}"', shell=True,
+                               capture_output=True)
+            if r.returncode != 0:
+                raise ValueError(r.stderr.decode())
