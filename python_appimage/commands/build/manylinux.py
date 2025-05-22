@@ -55,6 +55,7 @@ def execute(tag, abi, clean, tarball):
             destination = f'{fullname}.AppImage'
             build_appimage(
                 appdir = str(appdir),
+                arch = str(image.arch),
                 destination = destination
             )
             shutil.copy(

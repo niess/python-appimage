@@ -12,7 +12,7 @@ from ..utils.log import debug, log
 __all__ = ['build_appimage']
 
 
-def build_appimage(appdir=None, destination=None):
+def build_appimage(appdir=None, *, arch=None, destination=None):
     '''Build an AppImage from an AppDir
     '''
     if appdir is None:
@@ -21,7 +21,8 @@ def build_appimage(appdir=None, destination=None):
     log('BUILD', os.path.basename(appdir))
     appimagetool = ensure_appimagetool()
 
-    arch = platform.machine()
+    if arch is None:
+        arch = platform.machine()
     cmd = ['ARCH=' + arch, appimagetool, '--no-appstream', appdir]
     if destination is not None:
         cmd.append(destination)
