@@ -21,16 +21,21 @@ on:
 
 jobs:
   Test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['2.7', '3.7', '3.9']
+        version: ['3.9']
 
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.version }}
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y desktop-file-utils
+        pip install requests
 
     - name: Test scipy
       if: ${{ inputs.scipy }}

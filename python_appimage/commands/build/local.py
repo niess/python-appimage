@@ -12,7 +12,7 @@ __all__ = ['execute']
 def _unpack_args(args):
     '''Unpack command line arguments
     '''
-    return args.python, args.destination, args.no_packaging
+    return args.python, args.destination
 
 
 def execute(python=None, destination=None):

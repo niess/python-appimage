@@ -25,6 +25,11 @@ jobs:
       with:
         python-version: ${{ matrix.version }}
 
+    - name: Install Dependencies
+      run: |
+        sudo apt install -y desktop-file-utils
+        pip install requests
+
     - name: Test local builder
       run: |
         python -m python_appimage build local -p $(which python) \
