@@ -1,0 +1,58 @@
+[project]
+name = "python_appimage"
+authors = [
+    { name="Valentin Niess", email="valentin.niess@gmail.com" },
+]
+dynamic = ["version"]
+description = "Appimage releases of Python"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "requests",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Topic :: Software Development",
+    "Operating System :: POSIX :: Linux",
+]
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+
+[project.scripts]
+python-appimage = "python_appimage.__main__:main"
+
+[project.urls]
+homepage = "https://github.com/niess/python-appimage"
+documentation = "https://python-appimage.readthedocs.io"
+download = "https://pypi.python.org/pypi/python-appimage"
+source = "https://github.com/niess/python-appimage"
+issues = "https://github.com/niess/python-appimage/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["python_appimage*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "python_appimage.__version__"}
+
+[tool.bumpversion]
+current_version = "1.4.1"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+tag = false
+allow_dirty = false
+commit = true
+message = "Bump version: v{new_version}"
+commit_args = ""
+
+[[tool.bumpversion.files]]
+filename = "python_appimage/version.py"

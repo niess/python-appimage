@@ -4,7 +4,7 @@ on:
     branches:
       - master
     paths:
-      - 'VERSION'
+      - 'python_appimage/version.py'
   workflow_dispatch:
     inputs:
       upload:
