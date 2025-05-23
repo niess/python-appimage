@@ -75,7 +75,7 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
             elements.push(`<a href="${release.url}">${release.version}</a>`)
         }
         $("#append-releases-list").html(
-            " Available Python versions are " +
+            " The available Python versions are " +
             elements.slice(0, -1).join(", ") +
             " and " +
             elements[elements.length - 1] +

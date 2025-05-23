@@ -5,18 +5,18 @@ _Ready to use AppImages of Python are available as GitHub [releases][RELEASES]._
 
 ## Quickstart
 
-We provide relocatable Python runtimes as [AppImages][APPIMAGE] for Linux
-systems. These runtimes are extracted from [Manylinux][MANYLINUX] Docker images,
-and they are available as GitHub [releases][RELEASES].  Our Python AppImages are
-updated weekly, on every Sunday.
+We provide relocatable Python runtimes in the form of [AppImages][APPIMAGE] for
+Linux systems. These runtimes are extracted from [Manylinux][MANYLINUX] Docker
+images and are available as GitHub [releases][RELEASES]. Our Python AppImages
+are updated weekly, on every Sunday.
 
-Instructions for _installing_ and running _Python AppImages_ are provided on
+Instructions for _installing_ and running _Python AppImages_ can be found on
 [Read the Docs][READTHEDOCS].
 
-In addition, the online documentation describes the [`python-appimage`][PYPI]
-utility, for application developers. This utility can facilitate the building of
-Python apps, given an existing Python AppImage and a recipe folder.
-[Examples][APPLICATIONS] of recipes are available from GitHub.
+The online documentation also describes the [`python-appimage`][PYPI] utility
+for application developers. This utility can facilitate the development of
+Python applications, provided you have an existing Python AppImage and a recipe
+folder. [Examples][APPLICATIONS] of recipes are available on GitHub.
 
 
 ## Projects using [`python-appimage`][GITHUB]

@@ -15,8 +15,8 @@
 # Python AppImages
 
 We provide relocatable Python runtimes for _Linux_ systems, as
-[AppImages][APPIMAGE]. These runtimes have been extracted from
-[manylinux][MANYLINUX] Docker images.
+[AppImages][APPIMAGE]. These runtimes have been extracted from a variety of
+[Manylinux][MANYLINUX] Docker images.
 {{ "" | id("append-releases-list") }}
 
 ## Basic installation
@@ -35,23 +35,24 @@ chmod +x python3.10.2-cp310-cp310-manylinux2014_x86_64.AppImage
 
 !!! Note
     As can be seen from the previous [example](#basic-installation-example), the
-    AppImage name contains several informations. That are, the Python full
-    version ({{ "3.10.2" | id("example-full-version") }}), the CPython tag
-    ({{ "cp310-cp310" | id("example-python-tag") }}), the Linux compatibility
-    tag ({{ "manylinux2014" | id("example-linux-tag") }}) and the machine
-    architecture ({{ "x86_64" | id("example-arch-tag") }}).
+    AppImage name contains several pieces of information. This includes the
+    Python full version ({{ "3.10.2" | id("example-full-version") }}), the
+    [CPython tag][PEP_425] ({{ "cp310-cp310" | id("example-python-tag") }}), the
+    [Linux compatibility tag][MANYLINUX] ({{ "manylinux2014" |
+    id("example-linux-tag") }}) and the machine architecture ({{ "x86_64" |
+    id("example-arch-tag") }}).
 
 !!! Caution
-    One needs to **select an AppImage** that matches **system requirements**. A
-    summmary of available Python AppImages is provided at the
-    [bottom](#available-python-appimages) of this page.
+    It is essential to **select an AppImage** that aligns with the **system's
+    specifications**. An overview of the available Python AppImages is provided
+    at the [bottom](#available-python-appimages) of this page.
 
 
 {{ begin(".capsule") }}
 ### Creating a symbolic link
 
-Since AppImages native names are rather lengthy, one might create a symbolic
-link, e.g. as
+As AppImages' native names are quite lengthy, it might be relevant to create a
+symbolic link, for example as
 
 {{ begin("#basic-installation-example-symlink") }}
 ```bash
@@ -59,23 +60,23 @@ ln -s python3.10.2-cp310-cp310-manylinux2014_x86_64.AppImage python3.10
 ```
 {{ end("#basic-installation-example-symlink") }}
 
-Then, executing the AppImage as
-{{ "`./python3.10`" | id("basic-installation-example-execution") }} should
-start a Python interactive session on _almost_ any Linux, provided that **fuse**
-is supported.
+Executing the AppImage as {{ "`./python3.10`" |
+id("basic-installation-example-execution") }} should then start a Python
+interactive session on almost any Linux distribution, provided that **fuse** is
+supported.
 {{ end(".capsule") }}
 
 !!! Tip
-    Fuse is not supported on Windows Subsytem for Linux v1 (WSL1), preventing
-    AppImages direct execution. Yet, one can still extract the content of Python
-    AppImages and use them, as explained in the [Advanced
-    installation](#advanced-installation) section.
+    Fuse is not supported on Windows Subsystem for Linux v1 (WSL1), which
+    prevents the direct execution of AppImages. However, it is still possible to
+    extract the contents of Python AppImages and use them, as explained in the
+    [Advanced installation](#advanced-installation) section.
 
 
 ## Installing site packages
 
-Site packages can be installed using `pip`, distributed with the AppImage. For
-example, the following
+Site packages can be installed using `pip`, which is distributed with Python
+AppImages. For example, the following command
 
 {{ begin("#site-packages-example") }}
 ```bash
@@ -83,23 +84,22 @@ example, the following
 ```
 {{ end("#site-packages-example") }}
 
-installs the numpy package, where it is assumed that a symlink to the AppImage
-has been previously created. When using the **basic installation** scheme, by
-default Python packages are installed to your **user space**, i.e. under
-`~/.local` on Linux.
+installs the [numpy][NUMPY] package, assuming that a symlink to the AppImage has
+been created beforehand. When using this **basic installation** scheme, Python
+packages are installed by default to your **user space** (i.e. under `~/.local`
+on Linux).
 
 !!! Note
-    AppImage are read-only. Therefore, site packages cannot be directly
-    installed to the AppImage. However, the AppImage can be extracted, as
+    AppImages are read-only. Therefore, site packages cannot be installed
+    directly to the Python AppImage. However, the AppImage can be extracted, as
     explained in the [Advanced installation](#advanced-installation) section.
 
 
 {{ begin(".capsule") }}
 ### Alternative site packages location
 
-One can
-specify an alternative installation directory for site packages using the
-`--target` option of pip. For example, the following
+The `--target option` of pip can be used to specify an alternative installation
+directory for site packages. For example, the following command
 
 {{ begin("#site-packages-example-target") }}
 ```bash
@@ -107,7 +107,9 @@ specify an alternative installation directory for site packages using the
 ```
 {{ end("#site-packages-example-target") }}
 
-installs the numpy package besides the AppImage, in a `packages` folder.
+installs the [numpy][NUMPY] package in the `packages` folder, besides the
+AppImage.
+
 {{ end(".capsule") }}
 
 !!! Tip
@@ -116,33 +118,33 @@ installs the numpy package besides the AppImage, in a `packages` folder.
     `PYTHONPATH` environment variable.
 
 !!! Caution
-    While Python AppImages are relocatable, site packages might not be. In
-    particular, packages installing executable Python scripts assume a fix
-    location of the Python runtime. If the Python AppImage is moved, then these
-    scripts will fail. This can be patched by editing the script
-    [shebang][SHEBANG], or be reinstalling the corresponding package.
+    Although Python AppImages are relocatable, site packages may not be. In
+    particular, packages that install executable Python scripts assume a fixed
+    location for the Python runtime. If the Python AppImage is moved, these
+    scripts will fail. This can be resolved by either editing the script
+    [shebang][SHEBANG] or reinstalling the corresponding package.
 
 
 ## Isolating from the user environment
 
 By default, Python AppImages are not isolated from the user environment. For
 example, packages located under `~/.local/lib/pythonX.Y/site-packages` are
-loaded prior to AppImage's (system) ones.  Note that this is the usual Python
-runtime behaviour. However, it can be conflictual for some applications.
+loaded before the AppImage's ones. Note that this is the standard Python runtime
+behaviour. However, this can be conflictual for some applications.
 
-In order to isolate your application from the user environment, the Python
-runtime provides the `-E`, `-s` and `-I` options. For example, invoking a Python
-AppImage as {{ "`./python3.10 -s`" | id("user-isolation-example") }} prevents
-the loading of user site packages (located under `~/.local`). Additionaly, the
-`-E` option disables Python related environment variables. In particular, it
-prevents packages under `PYTHONPATH` to be loaded. The `-I` option triggers both
-`-E` and `-s`.
+To isolate your application from the user environment, the Python runtime
+provides the `-E`, `-s` and `-I` options. For example, running {{ "`./python3.10
+-s`" | id("user-isolation-example") }} prevents the loading of user site
+packages located under `~/.local`. Additionally, the `-E` option disables
+Python-related environment variables. In particular, it prevents packages under
+`PYTHONPATH` from being loaded. The `-I` option triggers both the `-E` and `-s`
+options.
 
 
 ## Using a virtual environement
 
-Isolation can also be achieved with a [virtual environment][VENV]. Python
-AppImages can create a `venv` using the standard syntax, e.g. as
+[Virtual environments][VENV] can also be used to achieve isolation. For example,
+Python AppImages can create a `venv` using the standard syntax, as
 
 {{ begin("#venv-example") }}
 ```bash
@@ -150,15 +152,16 @@ AppImages can create a `venv` using the standard syntax, e.g. as
 ```
 {{ end("#venv-example") }}
 
-Note that moving the base Python AppImage to another location breaks the virtual
-environment. This can be patched by editing symbolic links under `venv/bin`, as
-well as the `home` variable in `venv/pyvenv.cfg`. The latter must point to the
-AppImage directory.
+Please note that moving the base Python AppImage to a different location will
+break the virtual environment. This can be resolved by editing the symbolic
+links in `venv/bin`, as well as the `home` variable in `venv/pyvenv.cfg`. The
+latter must point to the AppImage directory.
 
 !!! Tip
-    Old Python AppImages, created before version 1.1, fail setting up `pip`
-    automaticaly during `venv` creation. However, this can be patched by calling
-    `ensurepip` from within the `venv`, after its creation.  For example, as
+    Old Python AppImages created before version 1.1 fail to set up `pip`
+    automatically during `venv` creation. However, this can be resolved by
+    calling `ensurepip` within the virtual environment after its creation. For
+    example, as
 
 ```bash
 source /path/to/new/virtual/environment/bin/activate
@@ -170,10 +173,10 @@ python -m ensurepip
 ## Advanced installation
 
 The [basic installation](#basic-installation) scheme described previously has
-some limitations when using Python AppImages as a runtime. For example,  site
-packages need to be installed to a separate location. This can be solved by
-extracting a Python AppImage to an `*.AppDir` directory, e.g. as
-
+certain limitations when Python AppImages are used as the runtime environment.
+For example, site packages need to be installed in a different location. This
+issue can be resolved by extracting a Python AppImage to an `AppDir`
+directory, e.g. as
 
 {{ begin("#advanced-installation-example") }}
 ```bash
@@ -185,32 +188,32 @@ ln -s python3.10.2-cp310-cp310-manylinux2014_x86_64.AppDir/AppRun python3.10
 ```
 {{ end("#advanced-installation-example") }}
 
-Then, by default **site packages** are installed to the extracted **AppDir**,
-when using `pip`. In addition, executable scripts installed by `pip` are patched
-in order to use relative [shebangs][SHEBANG].  Consequently, the AppDir can be
-freely moved around.
+Then, by default, **site packages** are installed to the extracted `AppDir`
+when using `pip`. Additionally, executable scripts installed by `pip` are
+patched to use relative [shebangs][SHEBANG]. Consequently, the `AppDir` can be
+moved around freely.
 
 !!! Note
-    Python AppDirs follow the [manylinux][MANYLINUX] installation scheme.
-    Executable scripts are installed under `AppDir/opt/pythonX.Y/bin` where _X_
-    and _Y_ in _pythonX.Y_ stand for the major and minor version numbers. Site
-    packages are located under
-    `AppDir/opt/pythonX.Y/lib/pythonX.Y/site-packages`. For convenience, `pip`
-    installed applications are also mirrored under `AppDir/usr/bin`, using
-    symbolic links.
+    Python `AppDirs` follow the [Manylinux][MANYLINUX] installation scheme.
+    Executable scripts are installed under the `AppDir/opt/pythonX.Y/bin`
+    directory, where _X_ and _Y_ represent the major and minor version numbers,
+    respectively. Site packages are located under
+    `AppDir/opt/pythonX.Y/lib/pythonX.Y/site-packages`. For convenience,
+    applications installed using `pip` are also mirrored under `AppDir/usr/bin`
+    using symbolic links.
 
 !!! Tip
-    As for Python AppImages, by default the extracted runtime is [not isolated
-    from the user environment](#isolating-from-the-user-environment). This
+    As for Python AppImages, the extracted runtime is [not isolated from the
+    user environment](#isolating-from-the-user-environment) by default. This
     behaviour can be changed by editing the `AppDir/usr/bin/pythonX.Y` wrapper
-    script, and by adding the `-s`, `-E` or `-I` option at the very bottom,
-    where Python is invoked.
+    script and adding the `-s`, `-E` or `-I` option to the line invoking Python
+    (at the end of the script).
 
 
 {{ begin(".capsule") }}
 ### Repackaging the AppImage
 
-An extracted AppDir can be re-packaged as an AppImage using
+An extracted `AppDir` can be re-packaged as an AppImage using
 [appimagetool][APPIMAGETOOL], e.g. as
 
 
@@ -227,21 +230,21 @@ chmod +x appimagetool-x86_64.AppImage
 ```
 {{ end("#repackaging-example") }}
 
-This allows to customize your Python AppImage, for example by adding your
-preferred site packages.
+This allows you to personalise your Python AppImage by adding your preferred
+site packages, for example.
 {{ end(".capsule") }}
 
 !!! Note
-    Python AppImages can also be used for packaging Python based applications,
-    as AppImages. Additional details are provided in the [developers
+    Python AppImages can also be used to package Python-based applications as
+    AppImages. Further information can be found in the [developers'
     section](apps).
 
 
 ## Available Python AppImages
 
-A summary of available Python AppImages [releases][RELEASES] is provided in the
-[table](#appimages-download-links) below. Clicking on a badge should download
-the corresponding AppImage.
+The [table](#appimages-download-links) below provides a summary of the available
+Python AppImage [releases][RELEASES]. Clicking on a badge should download the
+corresponding AppImage.
 
 {{ begin("#suggest-appimage-download") }}
 !!! Caution

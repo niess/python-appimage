@@ -10,7 +10,7 @@ docs_dir: src
 
 nav:
   - Python AppImages: index.md
-  - Developers corner: apps.md
+  - Developers' corner: apps.md
 
 theme:
   name: readthedocs

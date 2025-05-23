@@ -12,7 +12,9 @@
 [GITHUB]: {{ config.repo_url }}
 [LINUXDEPLOY]: https://github.com/linuxdeploy/linuxdeploy/
 [MANYLINUX]: https://github.com/pypa/manylinux/
+[NUMPY]: https://numpy.org/
 [PATCHELF]: https://github.com/NixOS/patchelf/
+[PEP_425]: https://peps.python.org/pep-0425/
 [PYPI]: https://pypi.org/project/python-appimage/
 [RELEASES]: {{ config.repo_url }}releases/
 [SHEBANG]: https://en.wikipedia.org/wiki/Shebang_(Unix)/
