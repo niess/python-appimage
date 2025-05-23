@@ -4,6 +4,7 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
     /* Unpack release metadata */
     const releases = []
     for (const datum of data) {
+        if (!datum.name.startsWith("Python")) continue;
         var full_version = undefined;
         const assets = [];
         for (const asset of datum.assets) {
@@ -189,7 +190,11 @@ $.getJSON("https://api.github.com/repos/niess/python-appimage/releases").done(fu
 
 
     function badge (asset, pad) {
-        const colors = {i686: "lightgrey", x86_64: "blue"};
+        const colors = {
+            aarch64: "d8dee9",
+            i686: "81a1c1",
+            x86_64: "5e81ac"
+        };
         const python = asset.python.split("-")[1];
         const arch = asset.arch.replace("_", "__");
         var color = colors[asset.arch];

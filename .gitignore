@@ -5,6 +5,7 @@ __pycache__
 AppDir
 build/*
 dist
+docs/ENV
 python_appimage.egg-info
 python_appimage/bin
 python_appimage/data/excludelist
