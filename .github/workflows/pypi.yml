@@ -1,15 +1,11 @@
 name: PyPI
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'python_appimage/version.py'
   workflow_dispatch:
     inputs:
       upload:
         description: 'Upload to PyPI'
         required: true
+        default: false
         type: boolean
 
 jobs:
@@ -49,9 +45,8 @@ jobs:
 
     - name: Build wheel
       run: |
-        pip install -U pip
-        pip install -U wheel
-        python setup.py bdist_wheel --universal
+        pip install -U pip build
+        python -m build
 
     - name: Upload to PyPI
       if: (github.ref == 'refs/heads/master') && inputs.upload
