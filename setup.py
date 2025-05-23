@@ -78,7 +78,10 @@ setuptools.setup(
     classifiers = [s for s in CLASSIFIERS.split(os.linesep) if s.strip()],
     license = 'GPLv3',
     platforms = ['Linux'],
-    python_requires = '>=2.7',
+    python_requires = '>=3.9',
+    install_requires=[
+        'requests',
+    ],
     include_package_data = True,
     package_data = {'': get_package_data()},
     entry_points = {
