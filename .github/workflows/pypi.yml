@@ -22,9 +22,7 @@ jobs:
         python-version: ${{ matrix.version }}
 
     - name: Install Dependencies
-      run: |
-        sudo apt install -y desktop-file-utils
-        pip install requests
+      run: pip install requests
 
     - name: Test local builder
       run: |
