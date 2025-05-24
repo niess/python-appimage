@@ -23,9 +23,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Dependencies
-      run: |
-        sudo apt install -y desktop-file-utils
-        pip install PyGithub requests
+      run: pip install PyGithub requests
 
     - name: Run updater
       run: |

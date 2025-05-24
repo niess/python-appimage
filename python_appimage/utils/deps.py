@@ -20,7 +20,7 @@ PREFIX = os.path.abspath(os.path.dirname(__file__) + '/..')
 APPIMAGETOOL_DIR = os.path.join(CACHE_DIR, 'bin')
 '''Location of the appimagetool binary'''
 
-APPIMAGETOOL_VERSION = '1.9.0'
+APPIMAGETOOL_VERSION = 'continuous'
 '''Version of the appimagetool binary'''
 
 EXCLUDELIST = os.path.join(CACHE_DIR, 'share/excludelist')

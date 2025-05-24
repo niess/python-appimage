@@ -33,9 +33,7 @@ jobs:
         python-version: ${{ matrix.version }}
 
     - name: Install Dependencies
-      run: |
-        sudo apt install -y desktop-file-utils
-        pip install requests
+      run: pip install requests
 
     - name: Test scipy
       if: ${{ inputs.scipy }}
@@ -62,8 +60,9 @@ jobs:
         ./xonsh-x86_64.AppImage -c 'import xonsh'
 
     - name: Test ssh-mitm
-      if: ${{ inputs.ssh_mitm && (matrix.version == '3.9') }}
+      if: ${{ inputs.ssh-mitm }}
       run: |
-        python -m python_appimage build app applications/ssh-mitm
+        python -m python_appimage build app applications/ssh-mitm              \
+                                            --python-version=3.11
         test -e ssh-mitm-x86_64.AppImage
         ./ssh-mitm-x86_64.AppImage --help
