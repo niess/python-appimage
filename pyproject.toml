@@ -41,7 +41,7 @@ include = ["python_appimage*"]
 version = {attr = "python_appimage.__version__"}
 
 [tool.bumpversion]
-current_version = "1.4.3"
+current_version = "1.4.4"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
