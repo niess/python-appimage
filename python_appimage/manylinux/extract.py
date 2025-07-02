@@ -244,14 +244,20 @@ class PythonExtractor:
             assert(site_packages.name == 'site-packages')
             log('INSTALL', certifi.name)
 
-            for src in glob.glob(str(site_packages / 'certifi*')):
-                src = Path(src)
+            matches = [
+                Path(src) for src in glob.glob(str(site_packages / 'certifi*'))
+            ]
+            matches = sorted(matches, key=lambda src: src.name)
+            cert_src = None
+            for src in matches:
                 dst = python_dest / f'{packages}/site-packages/{src.name}'
                 if not dst.exists():
                     shutil.copytree(src, dst, symlinks=True)
-
-            cert_src = dst / 'cacert.pem'
-            assert(cert_src.exists())
+                if cert_src is None:
+                    cacert_pem = dst / 'cacert.pem'
+                    if cacert_pem.exists():
+                        cert_src = cacert_pem
+            assert(cert_src is not None)
         else:
             raise NotImplementedError()
 
