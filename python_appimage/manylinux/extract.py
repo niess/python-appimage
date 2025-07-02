@@ -92,13 +92,16 @@ class PythonExtractor:
             raise NotImplementedError()
         paths.append(self.prefix / 'usr/local/lib')
 
-        ssl = glob.glob(str(self.prefix / 'opt/_internal/openssl-*'))
-        if ssl:
-            paths.append(Path(ssl[0]) / 'lib')
-
-        mpdecimal = glob.glob(str(self.prefix / 'opt/_internal/mpdecimal-*'))
-        if mpdecimal:
-            paths.append(Path(mpdecimal[0]) / 'lib')
+        patterns = (
+            'curl-*',
+            'mpdecimal-*',
+            'openssl-*',
+            'sqlite*',
+        )
+        for pattern in patterns:
+            pattern = str(self.prefix / f'opt/_internal/{pattern}/lib')
+            for match in glob.glob(pattern):
+                paths.append(Path(match))
 
         object.__setattr__(self, 'library_path', paths)
 
