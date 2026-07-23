@@ -97,6 +97,7 @@ class PythonExtractor:
             'mpdecimal-*',
             'openssl-*',
             'sqlite*',
+            'zstd-*',
         )
         for pattern in patterns:
             pattern = str(self.prefix / f'opt/_internal/{pattern}/lib')
