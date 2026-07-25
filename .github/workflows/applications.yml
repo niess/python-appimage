@@ -14,10 +14,6 @@ on:
         required: true
         default: true
         type: boolean
-      ssh-mitm:
-        required: true
-        default: true
-        type: boolean
 
 jobs:
   Test:
@@ -58,11 +54,3 @@ jobs:
         python -m python_appimage build app applications/xonsh
         test -e xonsh-x86_64.AppImage
         ./xonsh-x86_64.AppImage -c 'import xonsh'
-
-    - name: Test ssh-mitm
-      if: ${{ inputs.ssh-mitm }}
-      run: |
-        python -m python_appimage build app applications/ssh-mitm              \
-                                            --python-version=3.11
-        test -e ssh-mitm-x86_64.AppImage
-        ./ssh-mitm-x86_64.AppImage --help

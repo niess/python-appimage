@@ -24,7 +24,6 @@ folder. [Examples][APPLICATIONS] of recipes are available on GitHub.
 * [grand/python](https://github.com/grand-mother/python) - Contained, portable
   and modern python for [GRAND][GRAND] running from an AppImage
 * [rever](https://github.com/regro/rever) - Cross-platform software release tool.
-* [ssh-mitm](https://github.com/ssh-mitm/ssh-mitm) - ssh mitm server for security audits
 * [xonsh](https://github.com/xonsh/xonsh) - Python-powered, cross-platform, Unix-gazing
   shell language and command prompt
 * [xxh](https://github.com/xxh/xxh) - Bring your favorite shell wherever you go
