@@ -73,8 +73,9 @@ class PythonExtractor:
         object.__setattr__(self, 'version', version)
 
         # Set libraries search path.
-        paths = []
+        paths = [ self.prefix / 'usr/local/lib' ]
         if self.arch in (Arch.AARCH64, Arch.X86_64):
+            paths.append(self.prefix / 'usr/local/lib64')
             paths.append(self.prefix / 'lib64')
             paths.append(self.prefix / 'usr/lib64')
             if self.arch == Arch.X86_64:
@@ -90,7 +91,6 @@ class PythonExtractor:
             paths.append(self.prefix / 'usr/lib/i386-linux-gnu')
         else:
             raise NotImplementedError()
-        paths.append(self.prefix / 'usr/local/lib')
 
         patterns = (
             'curl-*',
