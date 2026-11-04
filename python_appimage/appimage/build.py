@@ -19,6 +19,10 @@ def build_appimage(appdir=None, *, arch=None, destination=None):
         appdir = 'AppDir'
 
     log('BUILD', os.path.basename(appdir))
+    # AppImages are run by users other than the one who built them.
+    # Recent appimagetool versions require the `chmod -R a+rX` fix
+    # so that everyone can read files and traverse directories.
+    subprocess.run(('chmod', '-R', 'a+rX', appdir), check=True)
     appimagetool = ensure_appimagetool()
 
     if arch is None:
